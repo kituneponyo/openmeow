@@ -1,0 +1,93 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <script>
+        $(()=>{
+            const albums = [];
+            $('.album-name').each((i,e)=>{
+                albums.push({
+                    id: $(e).attr('albumId'),
+                    name: $(e).text()
+                });
+            });
+            localStorage.albums = JSON.stringify(albums);
+            localStorage.albums && (meow.albums = JSON.parse(localStorage.albums));
+            loadSelectAlbum();
+        });
+    </script>
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+        <span>ブックマーク</span>
+
+        <div id="album-menu">
+
+            <ul class="album-list">
+                <li>
+                {% if album_id %}
+                    <a href="/bookmark">未整理</a>
+                {% else %}
+                    <strong>未整理</strong>
+                {% endif %}
+                </li>
+                {% for _album in albums if albums %}
+                    <li>
+                        {% if album_id == _album.id %}
+                            <strong>{{ _album.name }}</strong>
+                        {% else %}
+                        <a href="/bookmark/list/{{ _album.id }}" class="album-name" albumId="{{ _album.id }}">{{ _album.name }}</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                <li>
+
+                    <form action="/my_album/add" method="post">
+                        <input type="text" name="name" placeholder="新しいアルバム名">
+                        {#<label>#}
+                            {#<input type="checkbox" name="isPublic" value="1">#}
+                            {#公開#}
+                        {#</label>#}
+                        <input type="submit" value="作成">
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    {% if album %}
+        <script>
+            function changeIsPublic () {
+                const method = ($('input[name=is_public]').prop('checked')) ? 1 : 0;
+                const url = '/bookmark/changeIsPublic/' + {{ album.id }} + '/' + method;
+                $.ajax(url)
+                    .done(()=>{
+                        alert('アルバムの公開設定を変更しました。');
+                    });
+            }
+        </script>
+        <div class="box">
+            <p>{{ album.name }}</p>
+            <p>
+                <label>
+                    <input type="checkbox" name="is_public"
+                       {% if album.is_public %}checked="checked"{% endif %}
+                       onclick="changeIsPublic();"
+                    >公開する
+                </label>
+                &nbsp;
+                <a href="/my_album/delete/{{ album.id }}">削除</a>
+            </p>
+        </div>
+    {% endif %}
+
+    {% include('parts/meows.twig')  %}
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

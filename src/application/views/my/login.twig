@@ -1,0 +1,48 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <style>
+
+    </style>
+
+{% endblock %}
+
+{% block body_class %}center{% endblock %}
+
+{% block content %}
+
+    <div class="box" style="background-color: rgba(255, 255, 255, 0.7);">
+        <h2>ログイン</h2>
+
+        {% for error in errors if errors %}
+            <p class="warning">{{ error }}</p>
+        {% endfor %}
+
+        <form action="/my/doLogin" method="post">
+            <p>
+                meow_id<br>
+                <input type="text" name="mid" value="{{ mid }}">
+            </p>
+
+            <p>
+                パスワード<br>
+                <input type="password" name="password" value="{{ password }}">
+            </p>
+
+            <p>
+                <input type="submit" class="wide" value="ログイン">
+            </p>
+        </form>
+
+        <p>
+            <a href="/register">ユーザー登録はこちら</a>
+        </p>
+        <p>
+            <a href="/passwordReminder">パスワードを忘れた方はこちら</a>
+        </p>
+    </div>
+
+
+
+{% endblock %}

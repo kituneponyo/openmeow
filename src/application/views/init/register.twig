@@ -1,0 +1,81 @@
+<html>
+<head>
+    <style>
+        table.border {
+            border: solid 1px gainsboro;
+            border-collapse: collapse;
+        }
+        table.border th,
+        table.border td {
+            border: solid 1px gainsboro;
+            padding: 1em;
+        }
+        p.warning {
+            color: red;
+            font-size: small;
+            margin: 0.3em;
+        }
+        p.error {
+            color: red;
+        }
+        div.error {
+            border: solid 1px gainsboro;
+            padding: 1em;
+            margin: 0 0 1em 0;
+        }
+        input[type=submit] {
+            padding: 1em 2em;
+        }
+    </style>
+</head>
+<body>
+
+<h1>{{ config.siteName }} 管理用 アカウント登録</h1>
+
+{% if errors %}
+    <div class="error">
+        {% for error in errors %}
+            <p class="error">{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form action="/init/doRegister" method="post">
+    <table class="border">
+        <tbody>
+        <tr>
+            <th>アカウントID</th>
+            <td>
+                <input type="text" name="mid" value="{{ mid }}">
+                <p class="warning">※半角英数字</p>
+            </td>
+        </tr>
+        <tr>
+            <th>ユーザー名</th>
+            <td><input type="text" name="name" value="{{ name }}"></td>
+        </tr>
+        <tr>
+            <th>パスワード</th>
+            <td><input type="password" name="password"></td>
+        </tr>
+        <tr>
+            <th></th>
+            <td>
+                <label>
+                    <input type="checkbox" name="isAdmin" value="1" {% if isAdmin %}checked="checked"{% endif %}>管理者権限を付与する
+                </label>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>
+        管理者パスワード<br>
+        <input type="password" name="adminPass">
+    </p>
+
+    <input type="submit" value="アカウント登録">
+</form>
+
+</body>
+</html>

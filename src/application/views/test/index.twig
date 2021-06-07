@@ -1,0 +1,19 @@
+{# ベースとなるテンプレートを継承 #}
+{% extends "template.twig" %}
+
+{% block content %}
+
+    <style>
+
+    </style>
+
+    <div class="box">
+
+        <form action="/test/post" method="post" enctype="multipart/form-data">
+            <input type="file">
+            <input type="submit">
+        </form>
+
+    </div>
+
+{% endblock %}

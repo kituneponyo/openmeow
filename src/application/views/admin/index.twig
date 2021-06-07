@@ -1,0 +1,119 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinycolor/1.4.1/tinycolor.min.js"></script>
+    <script type="text/javascript" src="/assets/js/bootstrap-colorpickersliders/bootstrap.colorpickersliders.js"></script>
+
+    <script>
+
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="/assets/js/bootstrap-colorpickersliders/bootstrap.colorpickersliders.css" />
+    <style>
+
+    </style>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+
+        <h2>
+            管理
+        </h2>
+
+        <p>
+            全体
+            &nbsp;|&nbsp;
+            <a href="/admin/about/">about</a>
+        </p>
+
+        {% for error in errors if errors %}
+            <p class="warning">{{ error }}</p>
+        {% endfor %}
+
+        <form action="/admin/edit" method="post">
+            <table class="box">
+                <tbody>
+                <tr>
+                    <th>サイト名</th>
+                    <td><input type="text" name="siteName" value="{{ config.siteName }}"></td>
+                </tr>
+                <tr>
+                    <th>ドメイン</th>
+                    <td>
+                        <input type="text" name="FQDN" value="{{ config.FQDN }}">
+                        <p class="warning">例）meow.fan</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th>デフォルト背景色</th>
+                    <td>
+                        <div id="hsvflat"></div>
+                        <script>
+                            $(function(){
+
+                                $("#hsvflat").ColorPickerSliders({
+                                    color: "{{ config.bgcolor }}",
+                                    flat: true,
+                                    sliders: false,
+                                    swatches: false,
+                                    hsvpanel: true,
+
+                                    onchange: function(container, color) {
+                                        var body = $('body');
+
+                                        body.css("background-color", color.tiny.toRgbString());
+
+                                        $('input[name=bgcolor]').val(color.tiny.toRgbString());
+                                    }
+                                });
+
+                                $('.cp-pills').hide();
+                                $('.cp-hsvpanel-sv').css('margin', '0 8px 0 0');
+                            });
+                        </script>
+
+                        <input type="text" name="bgcolor" value="{{ config.bgcolor }}" onchange="
+                            $('body').css('background-color', $(this).val());
+                        ">
+
+                        <input type="button" onclick="
+                            $('input[name=bgcolor]').val('gainsboro');
+                            $('body').css('background-color', 'gainsboro');
+                        " value="標準に戻す">
+
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <input type="submit" class="wide" value="更新">
+        </form>
+
+        <form action="/admin/updateAdminPass" method="post">
+            <table class="box">
+                <tbody>
+                <tr>
+                    <th>管理者パスワード</th>
+                    <td>
+                        {% if config.adminPassHash %}
+                            <p>（設定されています）</p>
+                        {% endif %}
+                        <input type="text" name="adminPass" value="">
+                        <p class="warning">※8文字以上</p>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <input type="submit" class="wide" value="更新">
+        </form>
+    </div>
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

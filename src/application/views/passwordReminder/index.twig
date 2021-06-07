@@ -1,0 +1,26 @@
+{# ベースとなるテンプレートを継承 #}
+{% extends "template.twig" %}
+
+{% block content %}
+
+    <div class="box">
+
+        <h2>パスワードリマインダ</h2>
+
+        <form action="/passwordReminder/sendMail" method="post">
+            <table>
+                <tr>
+                    <th>meow_id</th>
+                    <td><input type="text" name="mid"></td>
+                </tr>
+                <tr>
+                    <th>メールアドレス</th>
+                    <td><input type="text" name="mail"></td>
+                </tr>
+            </table>
+            <input type="submit" value="メール送信">
+        </form>
+
+    </div>
+
+{% endblock %}

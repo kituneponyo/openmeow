@@ -1,0 +1,104 @@
+{# ベースとなるテンプレートを継承 #}
+{% extends "template.twig" %}
+
+{% block content %}
+
+    <div class="box">
+
+        <h2>meow について</h2>
+
+        <ul>
+            <li>meowってなに？
+                <ul>
+                    <li>TwitterライクなSNS</li>
+                    <li>ストレスフリーをめざしています</li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul>
+            <li>心をざわつかせない
+                <ul>
+                    <li>RT、トレンドなどはありません</li>
+                    <li>他人のフォロワー数、いいね数などは見えません</li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul>
+            <li>ActivityPubに部分的に対応しています
+                <ul>
+                    <li>mastodon, misskey などFediverseとやりとりできます</li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul>
+            <li>小規模指向
+                <ul>
+                    <li>現状、小規模運用を想定しています</li>
+                    <li>大規模運用したい場合は、mastodon, misskey などを使うと良いでしょう</li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul>
+            <li>設置が簡単
+                <ul>
+                    <li>最も簡単に設置できるFediverseインスタンスをめざしています</li>
+                    <li>PHP, MySQL が使える共用レンタルサーバに、コンソール不要で設置できます</li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul>
+            <li>meow.fan と OSS版meowの差異
+                <ul>
+                    <li>明確に再配布可能でない素材を削っています。</li>
+                    <li>他人の制作した素材等の追加は、個々の責任のもと、それぞれのライセンスを遵守して行ってください。</li>
+                    <li>寄付を募ると商用扱いとなる可能性があります。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul>
+            <li>利用素材
+                <ul>
+                    <li>
+                        <a href="https://commons.wikimedia.org/wiki/File:Meow.ogg?uselang=ja">https://commons.wikimedia.org/wiki/File:Meow.ogg</a><br>
+                        (CC BY-SA 3.0)
+                    </li>
+                    <li>
+                        <a href="https://systemuicons.com/" target="_blank">Icons: https://systemuicons.com/</a><br>
+                        (public domain)
+                    </li>
+                    <li>
+                        <a href="http://cresson.ivory.ne.jp/nekoneco/" target="_blank">Icons: NekoNeco font</a><br>
+                        (paid by meow.fan for limited usage)
+                    </li>
+                    <li>
+                        <a href="https://commons.wikimedia.org/wiki/File:Fediverse_logo_proposal_(mono_version).svg" target="_blank">Fediverse icon</a><br>
+                        (CC0)
+                    </li>
+                    <li>
+                        <a href="https://icon-rainbow.com/%E7%84%A1%E6%96%99%E3%81%A7%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A7%E3%81%8D%E3%82%8B%E3%83%8D%E3%82%B3%E3%81%AE%E8%B6%B3%E8%B7%A1%E3%81%AE%E3%82%A2%E3%82%A4%E3%82%B3%E3%83%B3/" target="_blank">Default user icon: icon-rainbow.com</a><br>
+                        <a href="https://icon-rainbow.com/license/" target="_blank">(license page)</a>
+                    </li>
+                    <li>
+                        <a href="https://commons.wikimedia.org/wiki/File:Barn_cat_with_bird.png">https://commons.wikimedia.org/wiki/File:Barn_cat_with_bird.png</a><br>
+                        (public domain)
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul>
+            <li>開発者：<a href="https://meow.fan/u/k">きつねこ</a></li>
+        </ul>
+
+        <p class="center">
+            <img src="/assets/img/Barn_cat_with_bird.png" style="max-width:100%;">
+        </p>
+    </div>
+
+{% endblock %}

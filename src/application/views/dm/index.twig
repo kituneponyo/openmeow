@@ -1,0 +1,54 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <style>
+        div.dm {
+            cursor: pointer;
+        }
+        div.dm:hover {
+            background-color: gainsboro;
+        }
+    </style>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    {{ include('parts/tab.twig', {'tl': 'd'}) }}
+
+    {% for dm in dms if dms %}
+        <div class="box meow-box meow-{{ dm.id }} dm" onclick="window.location='/dm/u/{{ dm.mid }}';">
+            <div class="icon">
+                <a href="/dm/u/{{ dm.mid }}">
+                    <img src="{{ dm.icon ? dm.icon_path : '/assets/icons/cat_footprint.png' }}">
+                </a>
+            </div>
+            <div class="meow-body" style="{% if meow.is_sensitive and (me.show_sensitive == 0) %}display:none;{% endif %}">
+                <p>
+                    <a href="/u/{{ dm.mid }}">{{ dm.name }}</a>
+                    @{{ dm.mid }}
+                </p>
+                <p>{{ dm.text|url2link|raw|nl2br }}</p>
+                {% if dm.file %}
+                    {#<a href="/up/{{ dm.create_at|date('Y/m/d') }}/{{ dm.file }}" target="_blank">#}
+                        {#<img src="/up/{{ dm.create_at|date('Y/m/d') }}/{{ dm.file }}"></a>#}
+                    （添付画像あり）
+                {% endif %}
+            </div>
+            <div class="clear"></div>
+
+            <p style="float: right; margin: 0;">
+                {{ dm.display_time }}
+            </p>
+            <div class="clear"></div>
+
+        </div>
+    {% endfor %}
+
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

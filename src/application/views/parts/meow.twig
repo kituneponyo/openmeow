@@ -1,0 +1,133 @@
+<div id="meow-{{ meow.id }}"
+     class="box meow-box meow-box-raw {% if meow.is_sensitive %}meow-is-sensitive{% endif %}"
+     userid="{{ meow.user_id }}"
+     meowid="{{ meow.id }}"
+     posttype="{{ meow.type }}"
+     {% if meow.dm_id %}dmid="{{ meow.dm_id }}"{% endif %}
+     is_private="{{ meow.is_private }}"
+>
+    <div class="icon">
+        <img src="{{ meow.icon ? meow.icon_path : '/assets/icons/cat_footprint.png' }}">
+    </div>
+    <p class="meow-head">
+        <a class="meow-user-name" href="/u/{{ meow.mid }}">{{ meow.name }}</a>
+        <span class="meow-user-meow-id">@{{ meow.mid }}</span>
+        {% if meow.type == 2 %}
+            <a class="meow-time" href="/dm/u/{{ meow.mid }}" title="{{ meow.create_at }}">{{ meow.display_time }}</a>
+        {% else %}
+            <a class="meow-time" href="/p/{{ meow.mid }}/{{ meow.id }}" title="{{ meow.create_at }}">{{ meow.display_time }}</a>
+        {% endif %}
+    </p>
+    {% if meow.summary %}
+        <p class="summary">{{ meow.summary }}</p>
+    {% endif %}
+    {% if meow.is_sensitive %}
+        <div class="sensitive-cussion">
+            <p class="warning">※センシティブな発言です※</p>
+            {% if me %}
+                <p class="show-sensitive"><input type="button" value="▼表示"></p>
+            {% else %}
+                <p style="margin:0; text-align: right;"><a href="/register">閲覧にはユーザー登録が必要です。</a></p>
+            {% endif %}
+        </div>
+    {% endif %}
+    {% if not meow.is_sensitive or me %}
+        <div class="meow-body">
+            {% if meow.reply_to %}
+                {% if meow.reply_mid %}
+                    <p class="meow-reply-at">返信先：<a href="/p/{{ meow.reply_mid }}/{{ meow.reply_to }}">@{{ meow.reply_mid }}</a></p>
+                {% else %}
+                    <p class="meow-reply-at">返信先：（削除されています）</p>
+                {% endif %}
+            {% endif %}
+            {% if meow.text -%}
+                <p class="meow-text">
+                    {%- if meow.type == 2 -%}
+                        <img class="dm-icon" src="/assets/icons/systemuicons/mail.svg">
+                    {%- endif -%}
+                    {{- meow.text|raw -}}
+                </p>
+            {%- endif %}
+
+            {% if meow.files %}
+                <div class="meow-imgs">
+                    {% for file in meow.files %}
+                        {% set segments = file|split('.') %}
+                        {% set filename = segments[0] %}
+                        {% set ext = segments|last %}
+                        {% set thumb = meow.has_thumb ? filename~'_t.'~ext : file %}
+                        {% if ext in ['jpg', 'jpeg', 'png', 'gif'] %}
+                            <div class="insert-image {{ meow.files|length > 1 ? 'multi-img' : '' }}">
+
+                                {% if file|slice(0, 4) == 'http' %}
+                                    <a href="{{ file }}" target="_blank"><img src="{{ file }}"></a>
+                                {% else %}
+                                    <a href="/up/{{ meow.create_at|date('Y/m/d') }}/{{ file }}" target="_blank">
+                                        <img src="/up/{{ meow.create_at|date('Y/m/d') }}/{{ thumb }}">
+                                    </a>
+                                {% endif %}
+
+                                {#<a href="/up/{{ meow.create_at|date('Y/m/d') }}/{{ file }}" target="_blank">#}
+                                {#<img src="/up/{{ meow.create_at|date('Y/m/d') }}/{{ thumb }}">#}
+                                {#</a>#}
+                                {% if meow.is_paint == 1 %}
+                                    <p class="meow-paint-tool">paint with 8bitpaint</p>
+                                {% elseif meow.is_paint == 2 %}
+                                    <p class="meow-paint-tool">paint with BBS Paint NEO（しぃペインター）</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        {% if ext == 'mid' %}
+                            <p class="meow-midi" file="{{ file }}" orgfile="{{ meow.orgfiles[loop.index0]|default(file) }}">
+                                <a href="#">{{ meow.orgfiles[loop.index0]|default(file) }}</a></p>
+                        {% endif %}
+                    {% endfor %}
+                    <p class="clear"></p>
+                </div>
+            {% endif %}
+
+            {% if meow.is_sensitive and me %}
+                <p class="hide-sensitive"><input type="button" value="▲隠す"></p>
+            {% endif %}
+
+            <div class="meow-foot">
+                {% if meow.type == 2 %}
+                    <div class="meow-foot-item meow-foot-reply-dm">
+                        &nbsp;
+                    </div>
+                {% else %}
+                    <div class="meow-foot-item meow-foot-reply">
+                        <div class="meow-foot-reply-count">{{ meow.reply_count ? meow.reply_count : '' }}</div>
+                    </div>
+                    {% if me %}
+                        <div class="meow-foot-item meow-foot-fav">
+                            <div class="fav">{{ meow.user_id == me.id and meow.fav_count ? meow.fav_count : '' }}</div>
+                        </div>
+                        <div class="meow-foot-item meow-foot-bookmark">
+                            <div class="bookmark"></div>
+                        </div>
+                    {% endif %}
+                    {% if not meow.is_private %}
+                        <div class="meow-foot-item meow-foot-share">
+                            <div class="share"></div>
+                        </div>
+                    {% endif %}
+                    {% if meow.is_private > 0 %}
+                        <div class="meow-foot-item meow-foot-only-each-follow">
+                            {% if meow.is_private == 2 %}
+                            {% elseif meow.is_private == 3 %}
+                                <img src="/assets/icons/systemuicons/heart.svg" title="相互フォロー限定">
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    {% if me.id == meow.user_id %}
+                        <div class="meow-foot-item meow-foot-menu">
+                            <div>&nbsp;</div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+    <p class="clear"></p>
+</div>

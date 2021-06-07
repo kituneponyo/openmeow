@@ -1,0 +1,105 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    {% include('activitypub/tab.twig')  %}
+
+    <div class="box">
+
+        <ul>
+            <li style="color: #dd0000; font-size: medium;">
+                注意事項
+                <ul>
+                    <li>※鯖もシステムも貧弱なので、リモートフォローが多すぎると鯖全体の挙動がやばくなる可能性があります</li>
+                    <li>※実装済機能にも細かい未実装が山盛りです</li>
+                    <li>※突然データがおかしくなったり動かなくなったりする可能性があります</li>
+                </ul>
+            </li>
+            <li>pawoo, misskey, mstdn.jp, pixelfed 等で動作確認しています</li>
+            <li>リモートフォロアーの発言は自分のHTLに出ます</li>
+            <li>LTLにリモートユーザーの発言はでません</li>
+            <li>FTLはありません</li>
+        </ul>
+
+        <table class="box">
+           <tbody>
+           <tr>
+               <th colspan="3">実装状況</th>
+           </tr>
+           <tr>
+               <th></th>
+               <th>送信</th>
+               <th>受信</th>
+           </tr>
+           <tr>
+               <th>リモートユーザー検索</th>
+               <td>○</td>
+               <td>○</td>
+           </tr>
+           <tr>
+               <th>リモートフォロー</th>
+               <td>○</td>
+               <td>承認必須</td>
+           </tr>
+           <tr>
+               <th>鍵垢</th>
+               <td>×</td>
+               <td>×</td>
+           </tr>
+           <tr>
+               <th>ブロック</th>
+               <td>×</td>
+               <td>×</td>
+           </tr>
+           <tr>
+               <th>投稿／削除</th>
+               <td>○</td>
+               <td>○</td>
+           </tr>
+           <tr>
+               <th>センシティブ対応</th>
+               <td>○</td>
+               <td>○</td>
+           </tr>
+           <tr>
+               <th>リプライ</th>
+               <td>○</td>
+               <td>○</td>
+           </tr>
+           <tr>
+               <th>ふぁぼ／ふぁぼ解除</th>
+               <td>○</td>
+               <td>○</td>
+           </tr>
+           <tr>
+               <th>画像、貼付ファイル</th>
+               <td>○</td>
+               <td>○</td>
+           </tr>
+           <tr>
+               <th>DM</th>
+               <td>○</td>
+               <td>○</td>
+           </tr>
+           <tr>
+               <th>RT</th>
+               <td>実装予定なし</td>
+               <td>×</td>
+           </tr>
+           <tr>
+               <th>update actor</th>
+               <td>○</td>
+               <td>○</td>
+           </tr>
+           </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

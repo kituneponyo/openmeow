@@ -1,0 +1,82 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <style>
+
+    </style>
+
+{% endblock %}
+
+{% block body_class %}center{% endblock %}
+
+{% block content %}
+
+    <div class="box" style="background-color: rgba(255, 255, 255, 0.7);">
+        <h2>ユーザー登録</h2>
+
+        {% for error in errors if errors %}
+            <p class="warning">{{ error }}</p>
+        {% endfor %}
+
+        {% if today_register_count >= 100 %}
+            <p>ユーザー登録上限に達しました。明日以降またお試しください。</p>
+        {% else %}
+        <form action="/register/doRegist" method="post">
+
+            {% if invite_user %}
+                <input type="hidden" name="invite_user_id" value="{{ invite_user.id }}">
+                <input type="hidden" name="invite_key" value="{{ invite_user.invite_key }}">
+                <p>
+                    招待者<br>
+                    <div class="icon"><img src="{{ invite_user.icon ? invite_user.icon_path : '/assets/icons/cat_footprint.png' }}"></div>
+                    {{ invite_user.name }}<br>
+                    {% if invite_user.invite_message %}
+                        <div style="margin: 0.5em 0 0 0;">
+                            「{{ invite_user.invite_message|nl2br }}」
+                        </div>
+                    {% endif %}
+                </p>
+            {% endif %}
+
+            <p>
+                meow_id（アカウント名）<br>
+                <input type="text" name="mid" value="{{ mid }}" placeholder="（例）nekota_tarou"><br>
+                <span class="warning">※半角英数字</span>
+            </p>
+
+            <p>
+                ユーザー名<br>
+                <input type="text" name="name" value="{{ name }}" placeholder="（例）猫田太郎">
+            </p>
+
+            <p>
+                パスワード<br>
+                <input type="password" name="password" value="{{ password }}"><br>
+                <span class="warning">※半角英数字</span>
+            </p>
+
+            <p>
+                <label>
+                    <input type="checkbox" name="respect_cat" value="1">猫と和解します（必須）
+                </label>
+            </p>
+            <p>
+                <label>
+                    <input type="checkbox" name="crying" value="1" checked="checked">ニャーと鳴きます（任意）
+                </label>
+            </p>
+
+            <input type="submit" class="wide" value="ユーザー登録">
+
+            <p style="margin:1em;">
+                <a href="/my/login">ログインはこちらから</a>
+            </p>
+            <p>
+                <a href="/passwordReminder">パスワードを忘れた方はこちら</a>
+            </p>
+        </form>
+        {% endif %}
+    </div>
+
+{% endblock %}

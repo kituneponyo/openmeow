@@ -1,0 +1,60 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <style>
+        div.border {
+            border: solid 1px gainsboro;
+            padding: 10px;
+        }
+    </style>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+
+        <h2>
+            管理
+        </h2>
+
+        <p>
+            <a href="/admin/">全体</a>
+            &nbsp;|&nbsp;
+            about
+        </p>
+
+        <table class="box">
+            <tbody>
+            <tr>
+                <th>about/</th>
+                <td>{{ aboutPage.title|default('about') }}</td>
+                <td><a href="/page/editSpecial/about">編集</a></td>
+            </tr>
+            {% for page in pages if pages %}
+                <tr>
+                    <th>{{ page.name }}</th>
+                    <td>{{ page.title }}</td>
+                    <td><a href="/page/editSpecial/{{ page.name }}">編集</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="border">
+            <form action="/page/editSpecial" method="post">
+                <p>
+                    https://{{ config.host }}/about/<input type="text" name="pageName">
+                </p>
+                <input type="hidden" name="dirName" value="about">
+                <input type="submit" value="ページ追加">
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

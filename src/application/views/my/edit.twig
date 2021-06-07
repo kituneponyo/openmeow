@@ -1,0 +1,135 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <style>
+        h2 {
+            background-color: white;
+            padding: 0.5em;
+        }
+        table.box {
+            width: 100%;
+            background-color: white;
+        }
+        table.box th {
+            width: 20%;
+        }
+    </style>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+    <h2>
+        プロフィール
+        /
+        <a href="/my/settings">一般設定</a>
+        /
+        <a href="/my/account">アカウント</a>
+    </h2>
+
+    <form action="/my/editProfile" method="post">
+        <input type="hidden" name="id" value="{{ me.id }}">
+        <table class="box">
+            <tbody>
+            <tr>
+                <th>meow_id</th>
+                <td>
+                    {#<input type="text" name="mid" value="{{ me.mid }}">#}
+                    {{ me.mid }}
+                </td>
+            </tr>
+            <tr>
+                <th>名前</th>
+                <td><input type="text" name="name" value="{{ me.name }}"></td>
+            </tr>
+            <tr>
+                <th>自己紹介</th>
+                <td><textarea name="note" style="width:100%; height:10em;">{{ me.note }}</textarea></td>
+            </tr>
+            <tr>
+                <th>twitterID</th>
+                <td>
+                    <input type="text" name="twitter_id" value="{{ me.twitter_id }}">
+                    <p class="warning">※@不要</p>
+                </td>
+            </tr>
+            <tr>
+                <th>URL</th>
+                <td>
+                    <input type="text" name="url" value="{{ me.url }}">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <input type="submit" class="wide" value="更新">
+    </form>
+
+    <form action="/my/editIcon" enctype="multipart/form-data" method="post">
+        <input type="hidden" name="id" value="{{ me.id }}">
+        <table class="box">
+            <tbody>
+            <tr>
+                <th>アイコン</th>
+            </tr>
+            <tr>
+                <td>
+                    {% if me.icon %}
+                        <div class="icon">
+                            <img src="{{ me.icon_path }}">
+                        </div>
+                    {% endif %}
+                    <input type="file" name="img" accept="image/jpeg, image/png">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <input type="submit" class="wide" value="更新">
+    </form>
+
+    <form action="/my/editHeaderImg" enctype="multipart/form-data" method="post">
+        <input type="hidden" name="id" value="{{ me.id }}">
+        <table class="box">
+            <tbody>
+            <tr>
+                <th>ヘッダ画像</th></tr>
+            <tr>
+                <td>
+                    {% if me.header_img %}
+                        <div class="prof-bg">
+                            <img src="{{ me.prof_path }}/{{ me.header_img }}">
+                        </div>
+                    {% endif %}
+                    <input type="file" name="img" accept="image/jpeg, image/png">
+                    {% if me.header_img %}
+                        <p>
+                            <label>
+                                <input type="checkbox" name="delete_header_img" value="1">ヘッダ画像を削除
+                            </label>
+                        </p>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p>表示サイズ</p>
+                    <label>
+                        <input type="radio" name="header_img_size" value="0" {% if not me.header_img_size %}checked="checked"{% endif %}>上部（高さ140pxに合わせる）
+                    </label><br>
+                    <label>
+                        <input type="radio" name="header_img_size" value="1" {% if me.header_img_size == 1 %}checked="checked"{% endif %}>全体（幅640pxに合わせる）
+                    </label>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <input type="submit" class="wide" value="更新">
+    </form>
+
+    </div>
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

@@ -1,0 +1,226 @@
+{% extends "template.twig" %}
+
+{% block title %}{{ user.name }} - {% endblock %}
+{% block head %}
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="meow" />
+    {% if user.twitter_id %}
+        <meta name="twitter:creator" content="@{{ user.twitter_id }}" />
+    {% endif %}
+    <meta property="og:url" content="{{ config.baseUrl }}/u/{{ user.mid }}" />
+    <meta property="og:title" content="meow - {{ user.name }}" />
+    <meta property="og:description" content="{{ user.note|slice(0, 200) }}" />
+    {% if user.icon_path %}
+        <meta property="og:image" content="{{ config.baseUrl }}/{{ user.icon_path }}" />
+    {% else %}
+    {% endif %}
+
+    <script>
+        function follow (id) {
+            var method = $('.follow.follow-on').length > 0 ? 'off' : 'on';
+            $.ajax('/follow/' + method, {
+                method: 'post',
+                data: {id: id}
+            })
+                .done(data => {
+                    if (data == 1) {
+                        var $follow = $('.follow');
+                        if (method == 'on') {
+                            $follow.addClass('follow-on').removeClass('follow-off');
+                            $follow.text('フォロー解除');
+                        } else {
+                            $follow.addClass('follow-off').removeClass('follow-on');
+                            $follow.text('フォロー');
+                        }
+                    }
+                });
+        }
+        function mute (id) {
+            if (confirm('ミュートすると解除できません。よいですか？')) {
+                $.ajax('/follow/mute', {
+                    method: 'post',
+                    data: {id: id}
+                })
+                    .done(data => {
+                        if (data == 1) {
+                            window.location = '/'; // この人はもう見ないので、トップに戻る
+                        }
+                    });
+            }
+        }
+
+
+    </script>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <style>
+        .header-img {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100px;
+        }
+        .prof-inner {
+            position: relative;
+            {% if user.header_img %}
+                background: rgba(255, 255, 255, 0.5);
+            {% endif %}
+            padding: 100px 20px 20px 20px;
+            -webkit-border-radius: 0 0 10px 10px;
+            -moz-border-radius: 0 0 10px 10px;
+            border-radius: 0 0 10px 10px;
+        }
+        .prof-inner > * {
+            filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 3px #fff) drop-shadow(0 0 5px #fff);
+        }
+        .prof-top-right-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        {% if user.header_img %}
+            .prof {
+                padding: 145px 0 0 0;
+                {% if user.is_remote_user %}
+                    background: rgba(255,255,255,0.9) url('{{ user.header_img }}') 50% 50% no-repeat;
+                    background-size: cover;
+                {% elseif not user.header_img_size %}
+                    background: rgba(255,255,255,0.9) url('{{ user.prof_path }}/{{ user.header_img }}') repeat-x;
+                    background-size: auto 145px;
+                {% elseif user.header_img_size == 1 %}
+                    background: rgba(255,255,255,0.9) url('{{ user.prof_path }}/{{ user.header_img }}') 50% 50% no-repeat;
+                    background-size: cover;
+                {% endif %}
+            }
+            .prof .icon {
+                top: 100px;
+            }
+            .prof-inner {
+                padding: 45px 20px 20px 20px;
+            }
+        {% else %}
+
+        {% endif %}
+
+    </style>
+
+    <div class="prof">
+        <div class="prof-inner">
+            {% if me %}
+            <p class="prof-top-right-control" style="float:right;">
+                {% if user.is_remote_user %}
+                    <a href="/ap/searchUser?acct={{ user.mid }}">フォロー管理</a>
+                {% else %}
+                    {% if me.mid != user.mid %}
+                        <a class="follow {{ follow ? 'follow-on' : 'follow-off' }}" href="#" onclick="follow({{ user.id }}); return false;"
+                        >{{ follow ? 'フォロー解除' : 'フォロー' }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if not follow and user.id != me.id %}
+                        <a href="#" onclick="return mute({{ user.id }});">ミュート</a>
+                    {% endif %}
+                {% endif %}
+
+                {% if follow or user.id == me.id %}
+                    <a href="/dm/u/{{ user.mid }}" alt="ダイレクトメッセージ">
+                        <img src="/assets/icons/systemuicons/mail.svg" style="height:2em; vertical-align: middle;"></a>
+                {% endif %}
+            </p>
+            {% endif %}
+            <p class="clear"></p>
+            <h2>
+                {{ user.name }}
+                {% if follow and followed %}
+                    <img src="/assets/icons/systemuicons/heart.svg" title="相互フォロー" style="height:1em; vertical-align: middle;">
+                {% endif %}
+            </h2>
+            <p>
+                {% if user.is_remote_user %}
+                    <a href="{{ user.actor }}" target="_blank">{{ user.mid }}</a>
+                {% else %}
+                    {{ user.mid }}@{{ config.fqdn }}
+                {% endif %}
+                {% if user.twitter_id %}
+                    &nbsp;
+                    <a href="https://twitter.com/{{ user.twitter_id }}" target="_blank">
+                        <img src="/assets/icons/twitter_logo_blue.svg" style="height:1.2em;"></a>
+                {% endif %}
+            </p>
+            {% if user.url %}
+            <p>
+                <a href="{{ user.url }}" target="_blank">{{ user.url }}</a>
+            </p>
+            {% endif %}
+            <p class="note">
+                {% if user.is_remote_user %}
+                    {{ user.note|raw }}
+                {% else %}
+                    {{ user.note|url2link|raw|nl2br }}
+                {% endif %}
+            </p>
+        </div>
+        <div class="icon">
+            <img src="{{ user.icon_path }}">
+        </div>
+    </div>
+    <p class="clear"></p>
+
+    <table id="tl" class="tl">
+        <tbody>
+        <tr>
+            <td class="{% if not mode %}current{% endif %}"
+                onclick="window.location='/u/{{ user.mid }}';">
+                <a href="/u/{{ user.mid }}" title="パブリック"><img src="/assets/icons/systemuicons/speech_bubble.svg"></a>
+            </td>
+            <td class="{% if mode == 'media' %}current{% endif %}"
+                onclick="window.location='/u/{{ user.mid }}/media';">
+                <a href="/u/{{ user.mid }}/media" title="メディア"><img src="/assets/icons/systemuicons/picture.svg"></a>
+            </td>
+            {% if hasPublicAlbum %}
+                <td class="{% if mode == 'albums' %}current{% endif %}"
+                    onclick="window.location='/u/{{ user.mid }}/albums';">
+                    <a href="/u/{{ user.mid }}/albums" title="アルバム"><img src="/assets/icons/systemuicons/bookmark.svg"></a>
+                </td>
+            {% endif %}
+        </tr>
+        </tbody>
+    </table>
+
+    {% if me %}
+        <div id="search-box" class="box search-box">
+            <div class="icon search-icon"></div>
+            <form id="search-form" action="/u/{{ user.mid }}" method="post" onsubmit="return onSearchFormSubmit();">
+                <input id="search-text" class="search-text" type="text" name="q" placeholder="さがしものですか？" value="{{ q }}">
+                <input type="hidden" name="tl" value="{{ tl }}">
+            </form>
+            <div class="clear-search-word close-btn" onclick="onClearSearchWordClick();"></div>
+            <p class="clear"></p>
+        </div>
+    {% endif %}
+
+    {% if album %}
+        <div class="box">
+            公開アルバム：{{ album.name }}
+        </div>
+    {% endif %}
+
+    {% if albums %}
+        <div class="box">
+            <h2>公開アルバム</h2>
+            {% for _album in albums if albums %}
+                <p><a href="/album/{{ user.mid }}/{{ _album.id }}">{{ _album.name }}</a></p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% include('parts/meows.twig')  %}
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

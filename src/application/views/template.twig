@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/ fb# {{ head_prefix|default('article') }}: http://ogp.me/ns/ {{ head_prefix|default('article') }}#">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/assets/icons/icon_144_144.png" />
+    <link href="/manifest.json" rel="manifest">
+    <title>{% block title %}{% endblock %}{{ config.siteName }}</title>
+
+    {% block ogp %}{% endblock %}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+    <script src="/assets/js/meow.js?508"></script>
+    <script src="/assets/js/append.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css?378" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/append.css" />
+
+    {% block head %}{% endblock %}
+</head>
+
+<style>
+    div.ogp {
+        border: solid 1px gainsboro;
+        padding: 10px;
+    }
+    div.ogp img {
+        max-width: 30%;
+        float:left;
+        margin: 0 10px 10px 0;
+    }
+    div.ogp p.ogp-title {
+        font-size: larger;
+        font-weight: bold;
+    }
+    div.ogp p.ogp-description {
+    }
+</style>
+
+<script>
+
+    function insertOgp ($text, ogp) {
+
+        let html = $text.html();
+
+        if (ogp.url && ogp.title) {
+            let $ogpHtml = $('<div class="ogp"></div>');
+            if (ogp.thumb) {
+                $ogpHtml.append('<img src="' + ogp.thumb + '">');
+            } else if (ogp.image) {
+                $ogpHtml.append('<img src="' + ogp.image + '">');
+            }
+            $ogpHtml.append('<p class="ogp-title">' + ogp.title + '</p>');
+            if (ogp.description) {
+                $ogpHtml.append('<p class="ogp-description">' + ogp.description + '</p>');
+            }
+            $ogpHtml.append('<p class="clear"></p>');
+            $ogpHtml.append('<p class="ogp-link"><a href="' + ogp.url + '" target="_blank">' + ogp.url + '</a></p>');
+            html = html.replace(ogp.url, $ogpHtml.prop('outerHTML'));
+        } else {
+            html = html.replace(ogp.url, '<a href="' + ogp.url + '" target="_blank">' + ogp.url + '</a>');
+        }
+
+        $text.html(html);
+    }
+
+    function checkOgp ($text, url) {
+        let urlKey = url;
+        let ogpCache = localStorage.ogp ? JSON.parse(localStorage.ogp) : {};
+        if (ogpCache[urlKey]) {
+            let ogp = ogpCache[urlKey];
+            insertOgp($text, ogp);
+        } else {
+            $.ajax("/api/getOgp", {
+                'method': 'POST',
+                'data': {
+                    'url': url
+                }
+            })
+                .done(data => {
+                    let ogp = JSON.parse(data);
+                    if (ogp.url) {
+                        ogpCache[urlKey] = ogp;
+                        localStorage.ogp = JSON.stringify(ogpCache);
+                    }
+                    insertOgp($text, ogp);
+                });
+        }
+
+    }
+
+    let meow = {
+
+        user: {
+            mid: '{{ user.mid|default('') }}'
+        },
+
+        needCheckLatest: true,
+        isExistsLatest: false,
+
+        currentMeowId: 0,
+
+        uploadFileNames: [],
+        uploadFiles: []
+    };
+
+    _m.me = {
+        id: '{{ me.id|default('') }}',
+        mid: '{{ me.mid|default('') }}',
+        showSensitive: {{ me.show_sensitive|default(0) }},
+        isAdmin: {{ me.is_admin|default(0) }},
+        muteEditAt: {{ me.mute_edit_at|default(0) }},
+        muteWordEditAt: {{ me.mute_word_edit_at|default(0) }},
+        albumEditAt: {{ me.album_edit_at|default(0) }}
+    };
+
+    _m.tl = '{{ tl }}';
+    !_m.cache[_m.tl] && (_m.cache[_m.tl] = {ids: [], lastUpdate: 0});
+
+    // 新着あり
+    function noticeTimeLineUpdate (tl) {
+        meow.isExistsLatest = true; // 新着ありフラグON
+        $('#tl-' + tl).addClass('has-latest');
+        _m.useCrying() && _m.noticeSound.play(); // 新着ボイス
+    }
+
+    // リプライ・DMチェック
+    const checkReply = () => {
+        // ログイン済、新着未確認のとき
+        if (_m.me.id && !$('#tl-r').hasClass('has-latest')) {
+            let path = "/json/user/" + _m.getUserPath(_m.me.id) + "/" + _m.me.id + "/user.json?" + (new Date()).getTime();
+            $.ajax(path)
+                .done(checkReplyDone)
+                .fail(checkReplyFail);
+        }
+        return false;
+    };
+    const checkReplyDone = user => {
+        if (user && parseInt(user.unread_reply_count) || parseInt(user.unread_dm_count)) {
+            noticeTimeLineUpdate('r'); // 新着あった
+        } else {
+            continueCheckReplyTimer(); // 新着なかったらタイマー設置
+        }
+    };
+    const checkReplyFail = (jqXHR, textStatus, errorThrown) => continueCheckReplyTimer();
+    const continueCheckReplyTimer =()=> {
+        _m.checkReplyInterval += 180000;
+        _m.checkReplyTimer = setTimeout(checkReply, _m.checkReplyInterval);
+    };
+
+    // 取得したきたLTLの新着データを突き合せる
+    function checkLtlDone (data) {
+        if (!data) return false;
+
+        const latestSummary = JSON.parse(data);
+        const updateMeows = latestSummary.filter(m => (
+            m.create_at > _m.updateAt
+            && !_m.isUserMuted(m.user_id) // ミュートしてないやつだけ通す
+            && m.user_id != _m.me.id
+        ));
+
+        clearInterval(_m.checkLatestTimer); // いったんタイマー停止
+
+        if (updateMeows.length > 0) {
+            noticeTimeLineUpdate(_m.tl); // 新着があるぞ
+        } else {
+            // 新着がない
+            _m.updateAt = latestSummary[0].create_at;
+            _m.cache[_m.tl].lastUpdate = latestSummary[0].create_at;
+
+            _m.setCheckLatestTimer(1); // 新着がなかったら、次の確認を遅めていく
+        }
+    }
+
+    // LTLの新着チェックのために、新着静的ファイルとりにいく
+    const checkLtl =()=> $.ajax('/getLatestSummary.php?lastUpdate=' + _m.updateAt).done(checkLtlDone);
+
+    // 新着チェック
+    function _checkLatest (tl) {
+        $.ajax('/api/checkLatest', {
+            method: 'post',
+            data: {last_update: _m.updateAt, tl: tl}
+        }).done(data => {
+            if (parseInt(data) > 0) {
+                clearInterval(_m.checkLatestTimer); // いったんタイマー停止
+                noticeTimeLineUpdate(_m.tl);
+            }
+        });
+    }
+
+    // 新着チェック
+    function checkLatest () {
+        if (_m.isLTL()) {
+            checkLtl(); // LTLなら、新着とりにいく
+        } else if (['h', 'e'].includes(_m.tl)) {
+            _checkLatest(_m.tl); // HTL, 相互限定は動的に取得
+        }
+    }
+
+    function createMeowBox (m) {
+        let $newMeow = $('#meow-box-template').clone()
+            .attr('meowid', m.id)
+            .attr('userid', m.user_id)
+            .attr('id', 'meow-' + m.id)
+            .attr('is_private', m.is_private);
+
+        $newMeow.find('div.icon img').attr('src', m.icon ? m.icon_path : '/assets/icons/cat_footprint.png');
+
+        $newMeow.find('a.meow-user-name')
+            .attr('href', '/u/' + m.mid)
+            .attr('target', '_blank')
+            .text(m.name);
+        $newMeow.find('span.meow-user-meow-id').text('@' + m.mid);
+        $newMeow.find('a.meow-time')
+            .attr('href', '/p/' + m.mid + '/' + m.id)
+            .attr('title', m.create_at)
+            .attr('target', '_blank')
+            .text(m.display_time);
+
+        // センシティブ
+        if (m.is_sensitive > 0) {
+            if (m.user_id != _m.me.id && _m.me.showSensitive == 0) {
+                // まったく表示しない場合
+                $newMeow.addClass('mute');
+            } else if (m.user_id == _m.me.id || _m.me.showSensitive == 1) {
+                $newMeow.addClass('meow-is-sensitive');
+                m.summary && $newMeow.find('.sensitive-cussion').before('<p class="summary">' + m.summary + '</p>');
+                $newMeow.find('.meow-foot').before('<p class="hide-sensitive"><input type="button" value="▲隠す"></p>'); // 隠すボタン追加
+            }
+        }
+
+        if (m.reply_to > 0) {
+            $newMeow.find('div.meow-body').prepend(
+                '<p class="meow-reply-at">返信先：<a href="/p/' + m.reply_mid + '/' + m.reply_to + '" target="_blank">@' + m.reply_mid + '</a></p>');
+        }
+
+        if (m.text) {
+
+            // activitypub
+            if (m.ap_note_object) {
+                let apNoteObject = JSON.parse(m.ap_note_object);
+                if (apNoteObject.tag && apNoteObject.tag.length > 0) {
+                    apNoteObject.tag.forEach(tag=>{
+                        if (tag.type == 'Emoji' && tag.name && tag.icon.url) {
+                            m.text = m.text.replace(tag.name, '<img class="meow-text-emoji" src="' + tag.icon.url + '">');
+                        }
+                    });
+                }
+            }
+
+            $newMeow.find('p.meow-text').html(m.text);
+
+            // remote note に元から含まれてるリンクは別窓で開く
+            if (m.ap_note_object) $newMeow.find('p.meow-text a').attr('target', '_blank');
+
+        } else {
+            $newMeow.find('p.meow-text').hide(); // 本文なければ消しとく
+        }
+
+        if (m.files) {
+
+            !jQuery.isArray(m.files) && (m.files = m.files.split(',')); // 配列に分解
+
+            $newMeow.find('.meow-foot').before('<div class="meow-imgs">');
+            let $imgs = $newMeow.find('.meow-imgs');
+
+            let insertImageClass = "insert-image" + (m.files.length > 1 ? ' multi-img' : '');
+            m.files.forEach((file, i) => {
+                let ext = file.split('.').pop();
+                let isOutsideFile = (file.slice(0, 4) == 'http');
+                let path = isOutsideFile ? file : (ext ? _m.getFileDir(m.create_at) + "/" + file : '');
+                let thumbPath = isOutsideFile ? file : (parseInt(m.has_thumb) ? path.replace('.', '_t.') : path);
+                if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+                    $imgs.append(
+                        '<div class="' + insertImageClass + '">' +
+                        '  <a href="' + path + '" target="_blank"><img src="' + thumbPath + '"></a>' +
+                        '  <p class="meow-paint-tool">' + _m.getPaintToolName(m.is_paint) + '</p>' +
+                        '</div>'
+                    );
+                }
+                if (ext == 'mid') {
+                    let orgfile = m.orgfiles[i] ? m.orgfiles[i] : file;
+                    $imgs.append('<p class="meow-midi" file="' + file + '" orgfile="' + orgfile + '"><a href="#">' + orgfile + '</a></p>')
+                }
+            });
+
+            (m.files.length > 0) && $imgs.append('<p class="clear"></p>'); // 添付ファイルがある場合、float:left が入るので 最後に戻しとく
+        }
+
+        // 返信数
+        (m.reply_count > 0) && $newMeow.find('.meow-foot-reply-count').text(m.reply_count);
+
+        // 相互限定発言でなければ、相互限定発言アイコン外す
+        (m.is_private != 3) && $newMeow.find('.meow-foot-only-each-follow').remove();
+
+        // 共有できるのはパブリック発言だけ
+        (m.is_private != 0) && $newMeow.find('.meow-foot-share').remove();
+
+        // 自分のmeowならmenu出す
+        (m.mid != _m.me.mid) && $newMeow.find('.meow-foot-menu').remove();
+
+        // DM
+        if (m.type && m.type == "2") {
+            $newMeow.addClass('meow-dm');
+            $newMeow.find('.meow-time')
+                .attr('href', '/dm/u/' + m.mid)
+                .attr('target', '_blank');
+            $newMeow.find('.meow-foot-reply-count').removeClass('meow-foot-reply-count').addClass('meow-foot-reply-dm');
+            $newMeow.find('.meow-foot-fav').remove();
+            $newMeow.find('.meow-foot-bookmark').remove();
+            $newMeow.find('.meow-text').prepend('<img class="dm-icon" src="/assets/icons/systemuicons/mail.svg">');
+        } else {
+            if (m.fav_count > 0 && m.user_id == _m.me.id) {
+                $newMeow.find('.fav').text(m.fav_count);
+            }
+        }
+
+        // check mute word
+        _m.isWordMuted(m.text) && $newMeow.addClass('mute');
+
+        return decorateMeow($newMeow);
+    }
+
+    function getLastMeow ($lastMeow = false) {
+        if (!$lastMeow) {
+            $lastMeow = $('#meows .meow-box:last');
+        }
+        if ($lastMeow.length == 0) {
+            return false;
+        } else if (!$lastMeow.hasClass('mute') && _m.cache[_m.tl].ids.includes($lastMeow.attr('meowid'))) {
+            return $lastMeow
+        }
+        return getLastMeow($lastMeow.prev());
+    }
+
+    function mergeLatest (data) {
+
+        let meows = JSON.parse(data);
+
+        // ここで定義した tlMeows は動的で、変更がダイレクトに反映されるので、ループ内で再取得不要
+        let tlMeows = document.getElementById('meows').getElementsByClassName('meow-box');
+        let $tlMeow = null;
+
+        meows.forEach( m => {
+
+            m.idInt = parseInt(m.id);
+
+            // check mute
+            if (_m.isUserMuted(m.user_id) || _m.isWordMuted(m.text)) return false;
+
+            // TLごとのmeow.idリストキャッシュ
+            !_m.cache[_m.tl].ids.includes(m.id) && _m.cache[_m.tl].ids.push(m.id);
+
+            // 全体キャッシュにない場合、追加
+            if (!_m.cache.meows[m.id]) {
+                m.tl = [];
+                _m.cache.meows[m.id] = m;
+            }
+            !_m.cache.meows[m.id].tl[_m.tl] && (_m.cache.meows[m.id].tl[_m.tl] = 1);
+
+            // #meows 内になければ、既存のmeow列と比較して入れ込んでいく
+            if ($('#meow-' + m.id).length == 0) {
+                let $meowBox = createMeowBox(m).hide();
+                // マージしていく
+                if (![...tlMeows].some(tlMeow => (m.idInt > parseInt(tlMeow.getAttribute('meowid'))) && $(tlMeow).before($meowBox))) {
+                    $('#meows').append($meowBox); // 途中に差し込む箇所がなければ（どのmeowよりも古ければ）最後尾に追加
+                }
+            }
+        });
+
+        let $lastMeow = getLastMeow();
+        meow.lastMeowId = $lastMeow.length ? $lastMeow.attr('meowid') : 0;
+
+        for (let i = 0; i < tlMeows.length; i++) {
+            $tlMeow = $(tlMeows[i]);
+
+            if ($tlMeow.hasClass('mute')) continue; // ミュート
+
+            // 検索語がある場合、チェック
+            if (_m.q && !$tlMeow.find('.meow-text').text().match(_m.q)) continue;
+
+            // 選択中のTLにはない
+            if (!_m.cache[_m.tl].ids.includes($tlMeow.attr('meowid'))) continue;
+
+            // 画面からはみ出したら抜ける
+            if ($('#meows').height() > window.innerHeight) break;
+
+            $tlMeow.fadeIn(500); // レンダリング
+        }
+
+        queryFav();
+        queryBookmark();
+
+        _m.updateLastUpdate();
+        _m.cache[_m.tl].lastUpdate = _m.updateAt;
+
+        _m.setCheckLatestTimer(0); // タイマー再開
+
+        _m.isLazyLoad = false;
+
+        meow.isExistsLatest = false; // 新着あり、を解除
+        $('#tl-' + _m.tl).removeClass('has-latest'); // バッヂを消す
+    }
+
+    /**
+     * @param tl
+     * @param lastUpdate
+     * @param max この値より古いmeowを読みに行く
+     * @returns {boolean}
+     */
+    function getLatest (tl, lastUpdate = 0, max = 0) {
+        if (!max) {
+            $('#meows .meow-box:visible').hide();
+        }
+        if (tl == 'p' && !_m.q && !max) {
+            // LTL, 検索ワードなし、新着取得
+            $.ajax('/getLatestJson.php').done(mergeLatest);
+        } else {
+            $.ajax('/api/getLatest', {
+                method: 'post',
+                data: {
+                    last_update: lastUpdate,
+                    tl: tl,
+                    q: _m.q,
+                    u: meow.user.mid,
+                    max: max
+                }
+            }).done(mergeLatest);
+        }
+        return false;
+    }
+
+    const getLatestDiff =()=> (meow.isExistsLatest && getLatest(_m.tl, _m.updateAt));
+
+    function loadMuteUsers (data) {
+
+        // 生データが来た場合はセット
+        data && (localStorage.muteList = JSON.parse(data));
+
+        // localStorage.muteList → _m.muteUsers に変換
+        _m.muteUsers = localStorage.muteList.split(',');
+        !Array.isArray(_m.muteUsers) && (_m.muteUsers = [_m.muteUsers]);
+
+        // ロード完了したら、初期表示meowのチェック
+        $('#meows > div.meow-box').each((i, e)=>{
+            let $e = $(e);
+            if (_m.isUserMuted($e.attr('userid'))) {
+                $e.addClass('mute');
+            } else {
+                ($('#meows').height() < window.innerHeight) && $e.fadeIn(500);
+            }
+            _m.tl && _m.cache[_m.tl] && _m.cache[_m.tl].ids.push($e.attr('meowid'));
+        });
+        meow.lastMeowId = $('#meows div.meow-box:not(.mute):last').attr('meowid');
+    }
+
+    const checkMuteWord = $e => {
+        ($e.text() && _m.isWordMuted($e.text()) && $e.parents('.meow-box').addClass('mute'));
+    };
+
+    const onClickBookmarkButton =()=> changeBookmark(meow.currentMeowId, 1) || closeBookmarkMenu();
+
+    function loadSelectAlbum () {
+        $('select[name=album_id]').empty().append('<option value="0">未整理</option>');
+        meow.albums.forEach(e => $('select[name=album_id]').append('<option value=' + e.id + '>' + e.name + '</option>'));
+    }
+
+    // TLの状態によって、投稿の公開範囲を設定
+    const setPostIsPrivate =()=> $('#meow-post-is-private').prop('checked', _m.isPTL());
+
+    function getNextMeow ($meowBox) {
+        $nextMeow = $meowBox.next();
+        if ($nextMeow.length == 0) {
+            return false;
+        } else if ($nextMeow.hasClass('mute')) {
+            return getNextMeow($nextMeow);
+        } else if (_m.q) {
+            // 検索語がある場合
+            if ($nextMeow.find('.meow-text').text().match(_m.q)) {
+                return $nextMeow;
+            } else {
+                return getNextMeow($nextMeow);
+            }
+        }
+
+        if (_m.tl) {
+            if (_m.cache[_m.tl].ids.includes($nextMeow.attr('meowid'))) {
+                return $nextMeow;
+            }
+        } else {
+            return $nextMeow;
+        }
+
+        return getNextMeow($nextMeow);
+    }
+
+    $(()=>{
+
+        if (_m.me.id) {
+
+            // ミュートリスト
+            if ($.cookie('muteEditAt') != _m.me.muteEditAt) {
+                $.ajax('/api/getMuteUsers')
+                    .done(data=>{
+                        $.cookie('muteEditAt', _m.me.muteEditAt, {expires: 365, path: '/'});
+                        loadMuteUsers(data);
+                    });
+            } else {
+                loadMuteUsers(false);
+            }
+
+            // ミュートワードチェック
+            if ($.cookie('muteWordEditAt') != _m.me.muteWordEditAt) {
+                $.ajax('/api/getMuteWords')
+                    .done(data=>{
+                        const words = JSON.parse(data);
+                        words.length && (localStorage.muteWords = words);
+                        $.cookie('muteWordEditAt', _m.me.muteWordEditAt, {expires: 365, path: '/'});
+                    });
+            }
+            localStorage.muteWords && (_m.muteWords = localStorage.muteWords.split(','));
+            _m.muteWords && $('p.meow-text').each((i,e)=>checkMuteWord($(e)));
+
+            // アルバム
+            if ($.cookie('albumEditAt') != _m.me.albumEditAt) {
+                $.ajax('/api/getAlbums')
+                    .done(data=>{
+                        const albums = JSON.parse(data);
+                        albums.length && (localStorage.albums = JSON.stringify(albums));
+                        $.cookie('albumEditAt', _m.me.albumEditAt, {expires: 365, path: '/'});
+                    });
+            }
+            localStorage.albums && (meow.albums = JSON.parse(localStorage.albums));
+            meow.albums && loadSelectAlbum();
+
+            // TLがある画面であれば、新着をロード
+            ['p', 'l', 'h', 'e'].includes(_m.tl) && getLatest(_m.tl, 0);
+        }
+
+        // 新着チェック
+        ['p', 'l', 'h', 'e'].includes(_m.tl) && _m.setCheckLatestTimer(0);
+
+        // 通知チェック
+        ['p', 'l', 'h', 'e', 'r'].includes(_m.tl) && _m.setCheckReplyTimer(0);
+
+        // 検索語
+        $('#search-box').on('change', e => (_m.q = $(e.target).val()));
+
+        // 画面スクロールで lazy load するよう設定
+        _m.setLazyLoad();
+    });
+
+</script>
+
+{% block script %}{% endblock %}
+
+<body class="{% block body_class %}{% endblock %}">
+<div id="bg"><img src="/assets/img/meowtles/23123.png"></div>
+<style>
+    body {
+        background: {{ bgcolor ? bgcolor : (me.bgcolor ? me.bgcolor : 'gainsboro') }};
+    }
+
+    #search-box {
+        {% if not q %}
+            height: 0;
+            display: none;
+        {% endif %}
+        position: relative;
+    }
+
+    iframe.insert-nico {
+        width: 312px;
+        height: 176px;
+        border: solid 1px #ccc;
+    }
+
+    .meow-body p.meow-text,
+    .meow-body span,
+    .meow-body a,
+    .meow-reply-at,
+    p.ogp-description,
+    p.warning {
+        font-size: {{ fontSize }}
+    }
+
+    {% if enableMeowStartButton %}
+    .meow-start-icon {
+        display: block;
+    }
+    {% endif %}
+
+    {% if me.show_sensitive == 2 %}
+    div.meow-is-sensitive div.sensitive-cussion {
+        display: none;
+    }
+    div.meow-is-sensitive div.meow-body {
+        display: block;
+    }
+    {% endif %}
+
+</style>
+<div class="content">
+
+    <div class="header">
+        <div style="margin: 0; position:relative;">
+            <div class="logo">
+                {% if me %}
+                    <h1><a href="/" title="meow" alt="{{ config.siteName }}" style="font-size: 45px;">{{ config.siteName }}</a></h1>
+                {% else %}
+                    <h1><a href="/" title="meow" alt="{{ config.siteName }}">{{ config.siteName }}</a></h1>
+                {% endif %}
+            </div>
+            {% if me %}
+                <div id="header-left-icons">
+                    {% if enableMeowStartButton %}
+                        <div id="header-meow-icon" class="icon meow-open meow-start-icon" onclick="onClickHeaderMeowIcon();"></div>
+                    {% endif %}
+                </div>
+                <div id="header-right-icons">
+                    <div id="menu-icon" class="icon menu-icon" onclick="_m.toggleMenu();"></div>
+                    {% if enableSearch %}
+                        <div id="header-search-icon" class="icon search-icon" onclick="toggleSearchBox();"></div>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div class="clear"></div>
+        </div>
+    </div>
+
+    {% if me %}
+        {#<p class="warning">※色々いじってます　なんか変なときは全体をリロードすると直るかも</p>#}
+    {% else %}
+        <style>
+            .no-login-menu {
+                text-align: center;
+            }
+        </style>
+        <div class="box no-login-menu">
+            <p>
+                <a href="/about">meowって何？</a>
+                &nbsp;<a href="/register">ユーザー登録</a>
+                &nbsp;<a href="/my/login">ログイン</a>
+            </p>
+        </div>
+    {% endif %}
+
+    {% if me and enableMeowForm %}
+        {{ include('parts/post.twig') }}
+    {% endif %}
+
+{% block content %}{% endblock %}
+
+    <div class="footer">
+        {#<p><a href="/about">about meow</a></p>#}
+    </div>
+
+    {% if me %}
+    <div id="user-menu-wrapper" class="popup-wrapper">
+        <div class="curtain"></div>
+        <div id="user-menu" class="menu box">
+            <div class="icon">
+                <a href="/u/{{ me.mid }}"><img src="{{ me.icon ? me.icon_path : '/assets/icons/cat_footprint.png' }}"></a>
+            </div>
+            <p style="margin: 0;">
+                <a href="/u/{{ me.mid }}">{{ me.name }}</a>
+                <a href="/my/profile" title="プロフィール編集"><img src="/assets/icons/systemuicons/pen.svg" style="height:1em;"></a>
+            </p>
+            <p class="prof-account">{{ me.mid }}@{{ config.fqdn }}</p>
+
+            <ul class="user-menu-list">
+                <li class="user-menu-follow"><a href="/follow/ee">フォロー</a> / <a href="/follow/er">フォロワー</a></li>
+                <li class="user-menu-dm"><a href="/dm">ダイレクトメッセージ</a></li>
+                <li class="user-menu-bookmark"><a href="/bookmark">ブックマーク</a></li>
+                <li class="user-menu-settings"><a href="/my/settings">設定</a></li>
+                <li class="user-menu-fediverse">
+                    <a href="/ap/">Fediverse</a>
+                    {% if followRequestCount %}
+                        <a href="/ap/followRequest">({{ followRequestCount }}件のフォローリクエスト)</a>
+                    {% endif %}
+                </li>
+                {% if me.is_admin %}
+                    <li class="user-menu-admin"><a href="/admin/">管理</a></li>
+                {% endif %}
+
+                <li>
+                    <a href="#" onclick="return $('.user-menu-etc').toggle() && false;">その他</a>
+                    <ul class="user-menu-list">
+                        <li class="user-menu-etc"><a href="/about">{{ config.host }} について</a></li>
+                        <li class="user-menu-etc"><a href="/about/meow">meowについて</a></li>
+                        {#<li class="user-menu-etc"><a href="/my/invite">招待</a></li>#}
+                    </ul>
+                </li>
+
+            </ul>
+
+            <div class="close-btn" onclick="_m.toggleMenu();"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if me %}
+        <div id="foot-control">
+            {% if enableMeowStartButton %}
+            <div id="foot-meow-open" class="icon meow-start-icon" onclick="onClickFootMeowIcon();"></div>
+            {% endif %}
+            <p class="clear"></p>
+            <div id="foot-search">
+                <div class="icon search-icon" onclick="toggleSearchBox();"></div>
+            </div>
+            <div id="foot-to-top" class="icon" onclick="window.scrollTo(0,0);"></div>
+        </div>
+    {% endif %}
+
+</div>
+
+{# 標準ポップアップメニュー #}
+{{ include('parts/popup_wrappers.twig') }}
+
+{# 追加ポップアップメニュー #}
+{{ include('parts/popup_wrappers.append.twig') }}
+
+</body>
+</html>

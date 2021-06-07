@@ -1,0 +1,42 @@
+
+<style>
+    #meow-post-box textarea {
+        width: calc(100% - 10px);
+    }
+</style>
+<script>
+    $(function(){
+        $('#img1').on('change', function (e) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $("#preview1").attr('src', e.target.result);
+            };
+            if (e.target.files[0]) {
+                reader.readAsDataURL(e.target.files[0]);
+            } else {
+                $("#preview1").attr('src', '');
+            }
+        });
+    })
+</script>
+<div id="meow-post-box" class="box meow-post-box {{ addClass }}" style="{{ style }}">
+    <form action="/dm/post" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="mid" value="{{ user.mid }}">
+        <input type="hidden" name="to_user_id" value="{{ user.id }}">
+        <textarea name="text">{{ text }}</textarea><br>
+        <p style="margin: 10px 0 0 0;">
+            <input id="meow-submit-button" type="submit" value="direct meow">
+
+            <label class="img_button">
+                <input id="img1" type="file" name="img" accept="image/png, image/jpeg, image/gif">
+                画像を添付
+            </label>
+
+        </p>
+
+        <p class="img-preview">
+            <img id="preview1" class="preview">
+        </p>
+
+    </form>
+</div>

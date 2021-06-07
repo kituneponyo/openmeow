@@ -1,0 +1,60 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <script>
+        $(()=>{
+            const muteWords = [];
+            $('.muteWord').each((i, e)=>{
+                muteWords.push($(e).text());
+            });
+            localStorage.muteWords = muteWords;
+            if ($('.muteWord').length > 0) {
+                $.cookie('muteWordEditAt', {{ me.mute_word_edit_at }}, {expires: 365, path: '/'});
+            }
+        })
+    </script>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+        <p>
+            <a href="/my/settings">&lt;&lt; 一般設定に戻る</a>
+        </p>
+
+        <h2>
+            ミュートワード
+        </h2>
+
+        {% for error in errors if errors %}
+            <p class="warning">{{ error }}</p>
+        {% endfor %}
+
+        <form action="/my/muteWord/add" method="post">
+            <input type="text" name="w" placeholder="ミュートワード">
+            <input type="submit" value="追加">
+        </form>
+
+        <table>
+            <tbody>
+        {% for word in words if words %}
+            <tr>
+                <td>
+                    <span class="muteWord">{{ word.word }}</span>
+                    <a href="/my/muteWord/delete/{{ word.id }}">削除</a>
+                </td>
+            </tr>
+        {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

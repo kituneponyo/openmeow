@@ -1,0 +1,103 @@
+<html>
+<head>
+    <style>
+        table.border {
+            border: solid 1px gainsboro;
+            border-collapse: collapse;
+        }
+        table.border th,
+        table.border td {
+            border: solid 1px gainsboro;
+            padding: 1em;
+        }
+        p.warning {
+            color: red;
+            font-size: small;
+            margin: 0.3em;
+        }
+        p.error {
+            color: red;
+        }
+        div.error {
+            border: solid 1px gainsboro;
+            padding: 1em;
+            margin: 0 0 1em 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>meow 初期設定</h1>
+
+{% if errors %}
+    <div class="error">
+        {% for error in errors %}
+            <p class="error">{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form action="/init/do" method="post">
+    <table class="border">
+        <tbody>
+        <tr>
+            <th>サイト設定</th>
+            <td>
+                <table class="border">
+                    <tbody>
+                    <tr>
+                        <th>サイト名</th>
+                        <td>
+                            <input type="text" name="siteName" value="{{ siteName }}">
+                            <p class="warning">（例）meow</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>ホスト</th>
+                        <td>
+                            <input type="text" name="host" value="{{ host }}">
+                            <p class="warning">※このサーバのドメインを入力してください。（例）meow.fan</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>管理者パスワード</th>
+                        <td>
+                            <input type="password" name="adminPass">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <th>データベース</th>
+            <td>
+                <table class="border">
+                    <tbody>
+                    <tr>
+                        <th>ホスト</th>
+                        <td><input type="text" name="dbHost" value="{{ dbHost }}"></td>
+                    </tr>
+                    <tr>
+                        <th>ユーザー名</th>
+                        <td><input type="text" name="dbUser" value="{{ dbUser }}"></td>
+                    </tr>
+                    <tr>
+                        <th>パスワード</th>
+                        <td><input type="password" name="dbPassword" value="{{ dbPassword }}"></td>
+                    </tr>
+                    <tr>
+                        <th>データベース名</th>
+                        <td><input type="text" name="dbName" value="{{ dbName }}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <input type="submit" value="初期化">
+</form>
+
+</body>
+</html>

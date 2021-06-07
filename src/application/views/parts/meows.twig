@@ -1,0 +1,50 @@
+<style>
+</style>
+<script>
+</script>
+
+<div id="meows" class="meows">
+{% for meow in meows if meows %}
+    {% if me or not meow.is_sensitive %}
+        {{ include('parts/meow.twig', {'meow': meow}) }}
+    {% endif %}
+{% endfor %}
+</div>
+
+<div id="meow-box-template" class="box meow-box">
+    <div class="icon"><img src=""></div>
+    <p class="meow-head">
+        <a class="meow-user-name"></a>
+        <span class="meow-user-meow-id"></span>
+        <a class="meow-time"></a>
+    </p>
+    <div class="sensitive-cussion">
+        <p class="warning">※センシティブな発言です※</p>
+        <p class="show-sensitive"><input type="button" value="▼表示"></p>
+    </div>
+    <div class="meow-body">
+        <p class="meow-text"></p>
+        <div class="meow-foot">
+            <div class="meow-foot-item meow-foot-reply">
+                <div class="meow-foot-reply-count">&nbsp;</div>
+            </div>
+            <div class="meow-foot-item meow-foot-fav">
+                <div class="fav" title="いいね">&nbsp;</div>
+            </div>
+            <div class="meow-foot-item meow-foot-bookmark">
+                <div class="bookmark" title="ブックマーク">&nbsp;</div>
+            </div>
+            <div class="meow-foot-item meow-foot-share">
+                <div class="share">&nbsp;</div>
+            </div>
+            <div class="meow-foot-item meow-foot-only-each-follow">
+                <img src="/assets/icons/systemuicons/lock.svg" title="相互フォロー限定">
+            </div>
+            <div class="meow-foot-item meow-foot-menu">
+                <div>&nbsp;</div>
+            </div>
+            <p class="clear"></p>
+        </div>
+    </div>
+    <p class="clear"></p>
+</div>

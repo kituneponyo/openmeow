@@ -1,0 +1,171 @@
+<script>
+
+    function postError (message) {
+        _m.useCrying() && _m.angrySound.play();
+        alert(message);
+        $('#meow-submit-button').removeAttr('disabled');
+        return false;
+    }
+
+    // 投稿
+    function postForm () {
+        $('#meow-submit-button').attr('disabled', 'disabled'); // 二重投稿禁止
+        var formData = new FormData($('.meow-post-form')[0]);
+        formData.append('mode', 'api');
+        $.ajax({
+            url: '/post',
+            type: 'POST',
+            enctype: 'multipart/form-data',
+            processData: false, //Important!
+            contentType: false,
+            cache: false,
+            data: formData
+        })
+            .done(data=>{
+
+                if (!data) { return postError('エラーです'); }
+
+                let post_is_private = formData.get('private');
+                $.cookie('post_is_private', post_is_private, {expires: 365, path: '/'});
+
+                meow.uploadFiles = [];
+                $('#new-previews').empty();
+
+                $('.meow-post-form')[0].reset();
+                $('.meow-post-is-private').prop('checked', $('.meow-post-is-private').val() == post_is_private);
+                meow.isExistsLatest = true;
+
+                _m.useCrying() && _m.postSound.play();
+
+                $('#meow-submit-button').removeAttr('disabled');
+
+                let m = JSON.parse(data);
+                if (m.id) {
+                    if (m.is_private == 0 && _m.tl == 'e') {
+                        return changeTab('p');
+                    } else if (m.is_private == 3 && _m.tl != 'e') {
+                        return changeTab('e');
+                    } else {
+                        let $newMeow = createMeowBox(m);
+                        $('#meows').prepend($newMeow);
+                        $newMeow.fadeIn(500);
+                    }
+                }
+
+                // リプライフォームあったら
+                if (_m.isReplyMode()) {
+                    // ほんとはリプライ先に、リプライをぶらさげたい
+
+                    // 元に戻しとく
+                    resetMeowForm();
+                    // かつ、tl = l にする（リプライが見えないから）
+                    changeTab('l');
+                } else {
+                    meow.isExistsLatest = true;
+                    getLatestDiff();
+                }
+
+                ($.cookie('withoutMarshmallow') != '1') && setRandomMarshmallow();
+            })
+            .fail(()=>{ postError('エラーです'); });
+        return false;
+    }
+
+    function postMeow () {
+        if ($('#meow-post-text').val() == '' && meow.uploadFiles.length == 0) {
+            return postError('空欄です');
+        }
+
+        // 画像hiddenをいったん削除
+        $('#meow-post-form input[name=newFiles]').remove();
+        // 画像がある場合、hiddenタグを挿入
+        if (meow.uploadFiles.length > 0) {
+            $('#meow-post-form').append('<input type="hidden" name="newFiles">');
+            $('#meow-post-form input[name=newFiles]').val(meow.uploadFiles.join('|'));
+            $('#meow-post-form').append('<input type="hidden" name="newFileNames">');
+            $('#meow-post-form input[name=newFileNames]').val(meow.uploadFileNames.join('|'));
+        }
+
+        if (['p', 'l', 'h', 'e'].includes(_m.tl)) {
+            return postForm();
+        } else {
+            $('.meow-post-form').submit();
+            return false;
+        }
+    }
+
+    const onClickMeowPostButton =()=> postMeow();
+
+    const setPostIsSensitive =()=>
+        $('#meow-post-form input[name=summary]').css('display', $("#meow-post-is-sensitive").prop('checked') ? 'block' : 'none');
+
+    function setPostFormEventHandler () {
+
+        onMeowFormReadImgFile(); // 画像ファイル読んだときの挙動
+        onMeowTextAreaSubmitWithCtrlAndEnterKey(); // ctrl + enter で投稿
+        setPostIsPrivate(); // TLにあわせて投稿の公開範囲を設定
+
+        // センシティブの場合は注釈入力項目出す
+        setPostIsSensitive();
+        $('#meow-post-is-sensitive').on('change', setPostIsSensitive);
+
+        $('.meow-post-form').on('submit', ()=>{
+            if (['p', 'l', 'h', 'e'].includes(_m.tl)) {
+                return postForm();
+            }
+        });
+    }
+
+    $(()=>{
+        onMeowTextAreaPasteImage(); // コピペで画像投稿
+
+        setPostFormEventHandler();
+    });
+
+</script>
+<style>
+    #meow-post-box input[name=summary] {
+        width: 100%;
+        margin: 0 0 5px 0;
+        border: solid 1px gainsboro;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+    }
+</style>
+<div id="meow-post-box" class="box meow-post-box {{ addClass }}" style="{{ style }}">
+    <form id="meow-post-form" class="meow-post-form" action="/post" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="reply_to" value="{{ meow.id }}">
+        <input type="text" name="summary" style="display:none;" placeholder="注釈を入力できます">
+        <textarea id="meow-post-text" name="text" contenteditable="true">{{ text }}</textarea><br>
+        <div style="margin:0">
+            <input id="meow-submit-button" type="button" value="meow" onclick="onClickMeowPostButton();">
+            <label title="画像を添付">
+                <input id="img1" type="file" name="img" accept="image/png, image/jpeg, image/gif, audio/midi, audio/x-midi" multiple>
+                <img class="meow-form-icon" src="/assets/icons/systemuicons/picture.svg" alt="画像を添付">
+            </label>
+
+            <input id="meow-post-is-private" class="meow-post-is-private" type="checkbox" name="private" value="3" {% if me.post_is_private == 3 %}checked="checked"{% endif %}  style="display:none;">
+            <label class="checkbox-wrapper" for="meow-post-is-private" title="相互フォロー限定">
+                <img class="meow-form-icon" src="/assets/icons/systemuicons/lock.svg" alt="相互フォロー限定"></label>
+
+            <input id="meow-post-is-sensitive" type="checkbox" name="is_sensitive" value="1" style="display:none;">
+            <label for="meow-post-is-sensitive" title="閲覧注意">
+                <img class="meow-form-icon" src="/assets/icons/systemuicons/warning_triangle.svg" alt="閲覧注意"></label>
+
+            <p class="clear"></p>
+        </div>
+        <div id="new-previews">
+        </div>
+        <p class="clear"></p>
+    </form>
+    <form id="transfer-bbspaintneo-form" action="/paint/neo" method="post">
+        <input type="hidden" name="reply_to">
+        <input id="transfer-bbspaintneo-text" type="text" name="text">
+    </form>
+    <form id="transfer-8bitpaint-form" action="/paint/8bit" method="post">
+        <input type="hidden" name="reply_to">
+        <input id="transfer-8bitpaint-text" type="text" name="text">
+    </form>
+    <p class="clear"></p>
+</div>

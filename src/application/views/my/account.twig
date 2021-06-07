@@ -1,0 +1,101 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <style>
+        h2 {
+            background-color: white;
+            padding: 0.5em;
+        }
+        table.box {
+            width: 100%;
+            background-color: white;
+        }
+        table.box th {
+            width: 20%;
+        }
+    </style>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+        <h2>
+            <a href="/my/profile">プロフィール</a>
+            /
+            <a href="/my/settings">一般設定</a>
+            /
+            アカウント
+        </h2>
+
+        {% for error in errors if errors %}
+            <div class="box">
+                <p class="warning">{{ error }}</p>
+            </div>
+        {% endfor %}
+
+        {#<div class="box">#}
+            <form action="/my/editAccount" method="post">
+                <input type="hidden" name="id" value="{{ me.id }}">
+                <table class="box">
+                    <tbody>
+                    <tr>
+                        <th>メールアドレス</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" name="email" value="{{ me.email }}">
+                            <p class="warning">
+                                ※未登録でも利用できますが、パスワード紛失時などの連絡に必要です
+                            </p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <input type="submit" class="wide" value="メールアドレス変更">
+            </form>
+        {#</div>#}
+
+        {#<div class="box">#}
+            {% if password_errors %}
+                {% for password_error in password_errors %}
+                    <p class="warning">{{ password_error }}</p>
+                {% endfor %}
+            {% endif %}
+            <form action="/my/changePassword" method="post">
+                <table class="box">
+                    <tbody>
+                    <tr>
+                        <th>パスワード</th>
+                    </tr>
+                    <Tr>
+                        <td>
+                            <p>
+                                現在のパスワード<br>
+                                <input type="password" name="password" required></p>
+
+                            <p>
+                                新しいパスワード<br>
+                                <input type="password" name="new_password" required></p>
+
+                            <p>
+                                新しいパスワード（再入力）<br>
+                                <input type="password" name="new_password_confirm" required></p>
+                        </td>
+                    </Tr>
+                    </tbody>
+                </table>
+                <input type="submit" class="wide" value="パスワード変更">
+            </form>
+        {#</div>#}
+
+        {#<div class="box">#}
+            <p><a href="/my/logout">ログアウト</a></p>
+        {#</div>#}
+    </div>
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

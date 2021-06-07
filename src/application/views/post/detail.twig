@@ -1,0 +1,87 @@
+{% extends "template.twig" %}
+
+{% block title %}{{ meow.text|striptags|slice(0, 128) }} - {% endblock %}
+
+{% block ogp %}
+<meta property="og:url" content="{{ config.baseUrl }}/p/{{ meow.mid }}/{{ meow.id }}" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="{{ meow.text|striptags|slice(0, 16) }} - {{ meow.name }}" />
+<meta property="og:description" content="{{ meow.text|striptags }}" />
+<meta property="og:site_name" content="meow" />
+{% if meow.files -%}
+    {% if meow.files[0]|slice(0, 4) == 'http' %}
+        <meta property="og:image" content="{{ meow.files[0] }}" />
+    {% else %}
+        <meta property="og:image" content="{{ config.baseUrl }}/up/{{ meow.create_at|date('Y/m/d') }}/{{ meow.files[0] }}" />
+    {% endif %}
+{% else -%}
+<meta property="og:image" content="{{ config.baseUrl }}/assets/icons/logo_icon.png" />
+{% endif %}
+{% if meow.files -%}
+<meta name="twitter:card" content="summary_large_image" />
+{% else -%}
+<meta name="twitter:card" content="summary" />
+{% endif %}
+<meta name="twitter:site" content="meow" />
+{% if meow.twitter_id -%}
+<meta name="twitter:creator" content="@{{ meow.twitter_id }}" />
+{% endif -%}
+{% endblock %}
+
+{% block head %}
+    <style>
+        .meow-text {
+            font-size: small;
+        }
+        .connect {
+            margin: 0 0 10px 10px;
+        }
+    </style>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(()=>{
+            $('div.meow-box').each((i, e)=>{
+                decorateMeow($(e));
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    {% if meow %}
+
+        {% if parent %}
+            {{ include('parts/meow.twig', {'meow': parent}) }}
+            <div class="connect">
+                <img src="/assets/icons/systemuicons/menu_vertical.svg">
+            </div>
+        {% endif %}
+
+        {{ include('parts/meow.twig', {'meow': meow}) }}
+
+    <div class="reply">
+
+        {% if me %}
+            {{ include('parts/post.twig', {'style': 'display: block;'}) }}
+        {% endif %}
+
+    {% for reply in replies if replies %}
+        {{ include('parts/meow.twig', {'meow': reply}) }}
+    {% endfor %}
+
+    </div>
+
+    {% else %}
+        <div class="box">
+            このmeowは存在しない、削除された、相互フォロー限定、など、なんらかの理由で閲覧できません。
+        </div>
+    {% endif %}
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

@@ -1,0 +1,42 @@
+{# ベースとなるテンプレートを継承 #}
+{% extends "template.twig" %}
+
+{% block content %}
+
+    <style>
+        ul {
+            padding-inline-start: 2em;
+        }
+    </style>
+
+    <div class="box">
+
+        <form action="/page/update" method="post">
+            <input type="hidden" name="id" value="{{ id }}">
+
+            {% if userId == 0 and id == 'about' %}
+                <p><a href="/about">https://{{ config.host }}/about</a></p>
+            {% endif %}
+
+            <p>
+                ページタイトル<br>
+                <input type="text" name="title" value="{{ page.title }}" style="width:100%;">
+            </p>
+
+            <p>
+                本文<br>
+                <textarea name="html" style="width:100%; height:80vh;">{{ page.html }}</textarea>
+            </p>
+
+            <p>
+                {% if page.id %}
+                    <input type="submit" value="更新">
+                {% else %}
+                    <input type="submit" value="作成">
+                {% endif %}
+            </p>
+        </form>
+
+    </div>
+
+{% endblock %}

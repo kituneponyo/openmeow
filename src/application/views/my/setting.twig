@@ -1,0 +1,261 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinycolor/1.4.1/tinycolor.min.js"></script>
+    <script type="text/javascript" src="/assets/js/bootstrap-colorpickersliders/bootstrap.colorpickersliders.js"></script>
+
+    <script>
+
+        function onClickUseCrying () {
+            if ($('input[name=useCrying]').prop('checked')) {
+                $.cookie('useCrying', 1, {expires: 365, path: '/'});
+                alert('鳴き声を利用設定しました。');
+            } else {
+                $.cookie('useCrying', "", {expires: -1, path: '/'});
+                $.cookie('useCrying', "", {expires: -1});
+                alert('鳴き声を解除しました。');
+            }
+        }
+
+        function onClickUseMarshmallow () {
+            if ($('input[name=useMarshmallow]').prop('checked')) {
+                $.cookie('withoutMarshmallow', "", {expires: -1, path: '/'});
+                $.cookie('withoutMarshmallow', "", {expires: -1});
+                alert('マシュマロ利用設定しました。');
+            } else {
+                $.cookie('withoutMarshmallow', 1, {expires: 365, path: '/'});
+                alert('マシュマロを解除しました。');
+            }
+        }
+
+        function onClickUseZenjido () {
+            if ($('input[name=useZenjido]').prop('checked')) {
+                $.cookie('useZenjido', 1, {expires: 365, path: '/'});
+
+                $('*').css('fontFamily', "'nekoneco', 'zenjido', 'osaka', 'メイリオ");
+                $('.meow-box *').css('fontSize', 'large');
+
+            } else {
+                $.cookie('useZenjido', "", {expires: -1, path: '/'});
+                $.cookie('useZenjido', "", {expires: -1});
+
+                $('*').css('fontFamily', '');
+                $('.meow-text *').css('fontSize', '');
+            }
+        }
+
+        function onChangeFontSize () {
+            const fontSize = $('select[name=fontSize]').val();
+            $.cookie('fontSize', fontSize, {expires: 365, path: '/'});
+            $('.meow-box *').css('fontSize', fontSize);
+        }
+
+        $(()=>{
+            $('input[name=useCrying]').prop('checked', parseInt($.cookie('useCrying')) == 1);
+            $('input[name=useMarshmallow]').prop('checked', parseInt($.cookie('withoutMarshmallow')) != 1);
+            $('input[name=useZenjido]').prop('checked', parseInt($.cookie('useZenjido')) == 1);
+
+            const fontSize = $.cookie('fontSize') ? $.cookie('fontSize') : 'medium';
+            $('select[name=fontSize]').val(fontSize);
+        });
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="/assets/js/bootstrap-colorpickersliders/bootstrap.colorpickersliders.css" />
+    <style>
+        h2 {
+            background-color: white;
+            padding: 0.5em;
+        }
+        table.box {
+            width: 100%;
+            background-color: white;
+        }
+        table.box th {
+            width: 20%;
+        }
+
+        #hsvflat{
+            margin: 0.5em 0;
+        }
+    </style>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+
+        <h2>
+            <a href="/my/profile">プロフィール</a>
+            /
+            一般設定
+            /
+            <a href="/my/account">アカウント</a>
+        </h2>
+
+        {% for error in errors if errors %}
+            <p class="warning">{{ error }}</p>
+        {% endfor %}
+
+        <form action="/my/editSetting" method="post">
+            <input type="hidden" name="id" value="{{ me.id }}">
+            <table class="box">
+                <tbody>
+                <tr>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="respect_cat" value="1"
+                                   {% if me.respect_cat %}checked="checked"{% endif %}>猫と和解する
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>背景色</p>
+
+                        <div id="hsvflat"></div>
+                        <script>
+                            $(function(){
+
+                                $("#hsvflat").ColorPickerSliders({
+                                    color: "{{ me.bgcolor|default(config.bgcolor) }}",
+                                    flat: true,
+                                    sliders: false,
+                                    swatches: false,
+                                    hsvpanel: true,
+
+                                    onchange: function(container, color) {
+                                        var body = $('body');
+
+                                        body.css("background-color", color.tiny.toRgbString());
+
+                                        $('input[name=bgcolor]').val(color.tiny.toRgbString());
+                                    }
+                                });
+
+                                $('.cp-pills').hide();
+                                $('.cp-hsvpanel-sv').css('margin', '0 8px 0 0');
+                            });
+                        </script>
+
+                        <input type="text" name="bgcolor" value="{{ me.bgcolor|default(config.bgcolor) }}" onchange="
+                            $('body').css('background-color', $(this).val());
+                        ">
+
+                        <input type="button" onclick="
+                            $('input[name=bgcolor]').val('gainsboro');
+                            $('body').css('background-color', 'gainsboro');
+                        " value="標準に戻す">
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>閲覧注意</p>
+                        <label><input type="radio" name="show_sensitive" value="0"
+                                      {% if me.show_sensitive == 0 %}checked="checked"{% endif %}
+                            >非表示</label>
+                        <label><input type="radio" name="show_sensitive" value="1"
+                                      {% if me.show_sensitive == 1 %}checked="checked"{% endif %}
+                            >クッションを置く</label>
+                        <label><input type="radio" name="show_sensitive" value="2"
+                                      {% if me.show_sensitive == 2 %}checked="checked"{% endif %}
+                            >表示</label>
+                    </td>
+                </tr>
+                {#<tr>#}
+                    {#<td>#}
+                        {#<p>Fediverse（開発中）</p>#}
+                        {#<label><input type="radio" name="enable_fediverse" value="2"#}
+                                      {#{% if me.enable_fediverse == 2 %}checked="checked"{% endif %}#}
+                            {#>利用する</label>#}
+                        {#<label><input type="radio" name="enable_fediverse" value="0"#}
+                                      {#{% if me.enable_fediverse == 0 %}checked="checked"{% endif %}#}
+                            {#>利用しない</label>#}
+                    {#</td>#}
+                {#</tr>#}
+                </tbody>
+            </table>
+            <input type="submit" class="wide" value="更新">
+        </form>
+
+        <table class="box">
+            <tbody>
+            <tr>
+                <th colspan="2">
+                    端末別設定
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <p>
+                        フォントサイズ：
+                        <select name="fontSize" onchange="onChangeFontSize();">
+                            <option value="small">小</option>
+                            <option value="medium">中</option>
+                            <option value="large">大</option>
+                        </select>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="useCrying" value="1" onclick="onClickUseCrying();">鳴き声
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="useMarshmallow" value="1" onclick="onClickUseMarshmallow();">マシュマロ
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="useZenjido" value="1" onclick="onClickUseZenjido();">人生に疲れた
+                        </label>
+                    </p>
+
+                    {#<p>#}
+                    {#表示件数#}
+                    {#<select id="showCount" onchange="onChangeShowCount();">#}
+                    {#<option value="100">100件</option>#}
+                    {#<option value="50">50件</option>#}
+                    {#</select>#}
+                    {#</p>#}
+                </td>
+
+            </tr>
+            </tbody>
+        </table>
+
+        <p><a href="/my/muteWord">ミュートワード</a></p>
+
+        <script>
+            function clearCache () {
+                // ミュートリスト
+                $.cookie('muteEditAt', "", {expires: -1, path: '/'});
+                delete(localStorage.muteUsers);
+
+                // ミュートワード
+                $.cookie('muteWordEditAt', "", {expires: -1, path: '/'});
+                delete(localStorage.muteWords);
+
+                // ブックマークリスト
+                $.cookie('albumEditAt', "", {expires: -1, path: '/'});
+                delete(localStorage.albums);
+
+                alert('キャッシュをクリアしました。');
+            }
+        </script>
+
+        <p><input type="button" onclick="clearCache();" value="キャッシュクリア"></p>
+
+    </div>
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

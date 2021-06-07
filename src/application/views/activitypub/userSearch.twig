@@ -1,0 +1,89 @@
+{% extends "template.twig" %}
+
+{% block head %}
+    <style>
+        .prof .icon {
+            position: static;
+        }
+    </style>
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    {% include('activitypub/tab.twig')  %}
+
+    <div class="box">
+        <form action="/ap/searchUser" method="post">
+            <input type="text" name="acct" value="{{ acct }}">
+            <input type="submit" value="検索">
+        </form>
+    </div>
+
+    {% if noResult %}
+        <div class="box">検索結果はありませんでした。</div>
+    {% endif %}
+
+    {% if actor %}
+        <div class="box prof">
+            {% if actor.icon.url %}
+                <div class="icon">
+                <img src="{{ actor.icon.url }}">
+                </div>
+            {% endif %}
+            <p>{{ actor.name }}</p>
+            <p><a href="{{ actor.url }}" target="_blank">{{ actor.url }}</a></p>
+            <p>{{ actor.summary|raw }}</p>
+            {% if followStatus %}
+                {% if followStatus.is_accepted %}
+                    <form action="/ap/undoFollowRequest" method="post">
+                        <input type="hidden" name="actor" value="{{ actor.id }}">
+                        <input type="submit" value="フォロー解除">
+                    </form>
+                {% else %}
+                    <form action="/ap/undoFollowRequest" method="post">
+                        <input type="hidden" name="actor" value="{{ actor.id }}">
+                        <input type="submit" value="フォローリクエスト解除">
+                    </form>
+                {% endif %}
+            {% else %}
+                <form action="/ap/sendFollowRequest" method="post">
+                    <input type="hidden" name="actor" value="{{ actor.id }}">
+                    <input type="submit" value="フォロー">
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% for feature in features if features %}
+        <div class="box">
+            <p>固定されたページ：<a href="{{ feature.url }}" target="_blank">{{ feature.published }}</a></p>
+            {{ feature.content|raw }}
+            {% for attach in feature.attachment if feature.attachment %}
+                {% if attach.mediaType in ['image/png', 'image/jpeg'] %}
+                <p>
+                    <img src="{{ attach.url }}" style="max-width:100%;">
+                </p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    {% for note in notes if notes  %}
+        <div class="box">
+            <p><a href="{{ note.object.id }}" target="_blank">{{ note.published }}</a></p>
+            {{ note.object.content|raw }}
+            {% for attach in note.object.attachment if note.object.attachment %}
+                {% if attach.mediaType in ['image/png', 'image/jpeg'] %}
+                    <p>
+                        <img src="{{ attach.url }}" style="max-width:100%;">
+                    </p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

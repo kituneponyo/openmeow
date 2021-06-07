@@ -1,0 +1,8 @@
+{
+	"require": {
+		"twig/twig" : "2.*",
+		"ext-openssl": "*",
+		"guzzlehttp/guzzle": "*",
+		"kub-at/php-simple-html-dom-parser": "^1.9"
+	}
+}

@@ -1,0 +1,28 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    {% include('activitypub/tab.twig')  %}
+
+    {% for request in followRequests if followRequests  %}
+        <div class="box">
+            <p><a href="{{ request.content.actor }}" target="_blank">{{ request.content.actor }}</a></p>
+            <p>{{ request.create_at }}</p>
+            <form action="/ap/accept" method="post">
+                <input type="hidden" name="object_id" value="{{ request.object_id }}">
+                <input type="submit" value="フォロー承認">
+            </form>
+        </div>
+    {% endfor %}
+
+
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

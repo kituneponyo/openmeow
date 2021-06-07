@@ -1,0 +1,54 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <script>
+        $(()=>{
+            const albums = [];
+            $('.album-name').each((i,e)=>{
+                albums.push({
+                    id: $(e).attr('albumId'),
+                    name: $(e).text()
+                });
+            });
+            localStorage.albums = JSON.stringify(albums);
+        });
+    </script>
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+        <span><a href="/bookmark">ブックマーク</a></span>
+        /
+        <span>アルバム</span>
+    </div>
+
+    <div class="box">
+        <form action="/my_album/add" method="post">
+            <input type="text" name="name" placeholder="アルバム名">
+            <label>
+                <input type="checkbox" name="isPublic" value="1">
+                公開する
+            </label>
+            <input type="submit" value="アルバム作成">
+        </form>
+    </div>
+
+    {#{% include('parts/meows.twig')  %}#}
+
+    <div class="box">
+    {% for album in albums if albums %}
+        <p>
+            <a href="/my_album/detail/{{ album.id }}" class="album-name" albumId="{{ album.id }}">{{ album.name }}</a>
+            &nbsp;
+            <a href="/my_album/delete/{{ album.id }}">削除</a>
+        </p>
+    {% endfor %}
+    </div>
+
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

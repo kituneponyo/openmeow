@@ -1,0 +1,65 @@
+{% extends "template.twig" %}
+
+{% block head %}
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <style>
+        .prof {
+            padding: 10px;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+        }
+        .prof .icon {
+            position: static;
+            float:left;
+            width: 90px;
+            height: 90px;
+            margin: 0;
+        }
+        .prof .icon img {
+            border: solid 5px whitesmoke;
+            width: 90px;
+            height: 90px;
+        }
+        .prof .note {
+            line-height: 1.4em;
+        }
+        .prof_detail {
+            float:left;
+            max-width: calc(100% - 130px);
+            margin: 0 0 0 10px;
+        }
+
+        /* DM画面では常に表示 */
+        .meow-post-box {
+            display: block;
+        }
+    </style>
+
+    {{ include('parts/tab.twig', {'tl': 'd'}) }}
+
+    <div class="box prof">
+        <div class="icon">
+            <a href="/u/{{ user.mid }}"><img src="{{ user.icon_path }}"></a>
+        </div>
+        <div class="clear"></div>
+        <div class="prof_detail">
+            <h2>{{ user.name }}</h2>
+            <p>
+                @{{ user.mid }}
+            </p>
+        </div>
+        <div class="clear"></div>
+    </div>
+
+    {% include('parts/dm_post.twig')  %}
+
+    {% include('parts/dms.twig')  %}
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

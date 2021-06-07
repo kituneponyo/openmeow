@@ -1,0 +1,13 @@
+RewriteEngine on
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+#RewriteCond %{REQUEST_URI} ^.*/\.well-known/webfinger\?.+$
+RewriteBase /
+RewriteCond %{REQUEST_URI} ^.*/\.well-known/webfinger
+RewriteRule ^(.*)$ /index.php [L]
+RewriteCond %{REQUEST_URI} ^.*/\.well-known/host-meta
+RewriteRule ^(.*)$ /index.php [L]
+#RewriteRule ^.+\.well-known/webfinger\?.+$ /index.php?/ap/webfinger?$1 [L]
+

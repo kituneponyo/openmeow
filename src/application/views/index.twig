@@ -1,0 +1,58 @@
+{% extends "template.twig" %}
+
+{% block ogp %}
+    <meta property="og:url" content="{{ config.baseUrl }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="meow" />
+    <meta property="og:description" content="分散SNSっぽい" />
+    <meta property="og:site_name" content="meow" />
+    <meta property="og:image" content="{{ config.baseUrl }}/assets/icons/logo_icon.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="meow" />
+    <meta name="twitter:creator" content="@{{ meow.twitter_id }}" />
+{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    {% if me %}
+
+        {{ include('parts/tab.twig') }}
+
+        <style>
+            @media screen and (min-width: 1200px) {
+                #meow-post-box {
+                    display: block;
+                }
+            }
+        </style>
+
+        <div id="search-box" class="box search-box">
+            <div class="icon search-icon"></div>
+            <form id="search-form" action="/" method="post" onsubmit="return onSearchFormSubmit();">
+                <input id="search-text" class="search-text" type="text" name="q" placeholder="さがしものですか？" value="{{ q }}">
+                <input type="hidden" name="tl" value="{{ tl }}">
+            </form>
+            <div class="clear-search-word close-btn" onclick="onClearSearchWordClick();"></div>
+            <p class="clear"></p>
+        </div>
+
+    {% endif %}
+
+    {% include('parts/meows.twig')  %}
+
+    <div class="box descript-tl descript-l">ここには全体公開発言が出ます<br>(LTL : Local Time Line)</div>
+    <div class="box descript-tl descript-h">ここにはフォローしている人の発言が出ます<br>(HTL : Home Time Line)</div>
+    <div class="box descript-tl descript-e">ここには相互フォロー限定発言が出ます</div>
+    <div class="box descript-tl descript-r">ここにはリプライ・DMが出ます</div>
+    <div class="box descript-tl descript-trouble">
+        <a href="/about#trouble">何かが表示されるはずなのに、何も表示されない場合、about meow →「動作がおかしいとき」をお試しください</a>
+    </div>
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

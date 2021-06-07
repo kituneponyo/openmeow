@@ -1,0 +1,48 @@
+<style>
+    .dm-send {
+        margin: 0 0 10px 10%;
+    }
+    .dm-recieve {
+        margin: 0 10% 10px 0;
+    }
+</style>
+
+<script>
+    function delete_self_dm (id) {
+        if (confirm('このDMを削除しますか？')) {
+            location.href = "/dm/deleteSelfDm/" + id;
+        }
+        return false;
+    }
+</script>
+
+{% for dm in dms if dms %}
+    <div class="box meow-box meow-{{ dm.id }} dm dm-{{ dm.user_id == me.id ? 'send' : 'recieve' }}">
+        <div class="icon">
+            <a href="/u/{{ dm.mid }}">
+                {% if dm.user_id == me.id %}
+                    <img src="{{ me.icon ? me.icon_path : '/assets/icons/cat_footprint.png' }}">
+                {% else %}
+                    <img src="{{ user.icon ? user.icon_path : '/assets/icons/cat_footprint.png' }}">
+                {% endif %}
+            </a>
+        </div>
+        <div class="meow-body" style="{% if meow.is_sensitive and (me.show_sensitive == 0) %}display:none;{% endif %}">
+            <p>
+                <a href="/u/{{ dm.mid }}">{{ dm.name }}</a>
+                @{{ dm.mid }}
+                {{ dm.display_time }}
+            </p>
+            <p class="meow-text">{{ dm.text|url2link|raw|nl2br }}</p>
+            {% if dm.file %}
+                <a href="/up/{{ dm.create_at|date('Y/m/d') }}/{{ dm.file }}" target="_blank">
+                    <img src="/up/{{ dm.create_at|date('Y/m/d') }}/{{ dm.file }}"></a>
+            {% endif %}
+        </div>
+        <div class="clear"></div>
+
+        {% if dm.user_id == me.id and dm.to_user_id == me.id %}
+        <div class="close-btn" onclick="delete_self_dm({{ dm.id }});"></div>
+        {% endif %}
+    </div>
+{% endfor %}

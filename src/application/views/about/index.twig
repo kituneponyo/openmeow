@@ -1,0 +1,22 @@
+{# ベースとなるテンプレートを継承 #}
+{% extends "template.twig" %}
+
+{% block content %}
+
+    <div class="box">
+
+        {% if page %}
+            <h2>{{ page.title }}</h2>
+            {{ page.html|raw }}
+        {% else %}
+            <h2>about {{ config.host }}</h2>
+            <p>まだ作成されていません</p>
+        {% endif %}
+
+        {% if me.is_admin %}
+            <p><a href="/page/editSpecial/about">このページを編集する</a></p>
+        {% endif %}
+
+    </div>
+
+{% endblock %}

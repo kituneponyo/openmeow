@@ -1,0 +1,54 @@
+<script>
+
+    function changeTab (tl) {
+
+        !_m.tl && _m.redirect('/?tl=' + tl); // TL以外の場合は読み直し
+
+        let $newTab = $('#tl-' + tl);
+        if ($newTab.length == 0) _m.redirect('/'); // なんか変なTL指定の場合はやり直し
+
+        // TL最下段の案内文を目立ち過ぎないように
+        _m.descriptTlTimer && clearTimeout(_m.descriptTlTimer);
+        $('.descript-tl').stop().hide();
+        _m.descriptTlTimer = setTimeout(()=>{
+            $('.descript-' + tl).fadeIn(500);
+            $('.descript-trouble').fadeIn(500);
+        }, 1000);
+
+        _m.tl = tl;
+        $.cookie('tl', tl, {expires: 365, path: '/'});
+        $('#tl td').removeClass('current');
+        $newTab.addClass('current');
+
+        // 表示してるmeowをいったん全部消す
+        $('#meows .meow-box:visible').hide();
+
+        setPostIsPrivate(); // 選択しているTLによって発言の公開範囲を変更
+
+        resetMeowForm(); // リプライフォームがあったら戻しとく
+
+        return getLatest(tl, _m.cache[tl].lastUpdate);
+    }
+
+    const onClickTab = tl => (_m.tl == tl ? getLatestDiff() : changeTab(tl));
+
+</script>
+
+<table id="tl" class="tl">
+    <tbody>
+    <tr>
+        <td id="tl-l" class="{% if tl == 'l' %}current{% endif %}" onclick="onClickTab('l');" title="ローカル">
+            <div><div class="badge"></div></div>
+        </td>
+        <td id="tl-h" class="{% if tl == 'h' %}current{% endif %}" onclick="onClickTab('h');" title="ホーム">
+            <div><div class="badge"></div></div>
+        </td>
+        <td id="tl-e" class="{% if tl == 'e' %}current{% endif %}" onclick="onClickTab('e');" title="プライベート">
+            <div><div class="badge"></div></div>
+        </td>
+        <td id="tl-r" class="{% if tl == 'r' %}current{% endif %} {% if me.unread_reply_count or me.unread_dm_count %}has-latest{% endif %}" onclick="onClickTab('r');" title="お知らせ">
+            <div><div class="badge"></div></div>
+        </td>
+    </tr>
+    </tbody>
+</table>

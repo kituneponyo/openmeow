@@ -1,0 +1,51 @@
+{% extends "template.twig" %}
+
+{% block head %}
+
+    <style>
+    </style>
+
+{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+        <h2>
+            <a href="/follow/ee">フォローしている({{ me.follows }})</a>
+            &nbsp;
+            フォローされている({{ me.followers }})
+        </h2>
+    </div>
+
+    {% for user in followers if followers %}
+        <div class="box follower">
+            <div class="icon">
+                <a href="/u/{{ user.mid }}"><img src="{{ user.icon_path }}"></a>
+            </div>
+            <div class="follower-detail">
+                <p>
+                    <a href="/u/{{ user.mid }}">{{ user.name }}</a>
+                    @{{ user.mid }}
+                    {% if user.twitter_id %}
+                        &nbsp;
+                        <a href="https://twitter.com/{{ user.twitter_id }}" target="_blank">
+                            <img src="/assets/icons/twitter_logo_blue.svg" style="height:1.2em;"></a>
+                    {% endif %}
+                </p>
+                <p>{{ user.note|url2link|raw }}</p>
+                <p>
+                    <a href="/dm/u/{{ user.mid }}"><img class="inline-icon" src="/assets/icons/systemuicons/mail.svg" title="ダイレクトメッセージ"></a>
+                    {% if user.is_reciprocal %}
+                        &nbsp;
+                        <img class="inline-icon" src="/assets/icons/systemuicons/heart.svg" title="相互フォロー">
+                    {% endif %}
+                </p>
+            </div>
+            <div class="clear"></div>
+        </div>
+    {% endfor %}
+
+{% endblock %}
+{# 子テンプレートでfooterについて記述しなければbase.htmlの記述が出力される #}

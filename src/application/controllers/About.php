@@ -89,43 +89,122 @@ class About extends MY_Controller {
 		];
     	print json_encode($values, JSON_UNESCAPED_SLASHES);
 	}
-
+	
 	public function statistics () {
-    	$values = [
-		    "name" => MEOW_CONFIG_SITE_NAME,
-		    "network" => "meow",
-		    "version" => MEOW_VERSION,
-		    "registrations_open" => true,
-		    "total_users" => "0",
-		    "active_users_halfyear" => "0",
-		    "active_users_monthly" => "0",
-		    "local_posts" => "0",
-		    "services" => [
-			    "appnet" => false,
-			    "buffer" => false,
-			    "dreamwidth" => false,
-			    "gnusocial" => false,
-			    "libertree" => false,
-			    "livejournal" => false,
-			    "pumpio" => false,
-			    "twitter" => false,
-			    "tumblr" => false,
-			    "wordpress" => false
-		    ],
-		    "appnet" => false,
-		    "buffer" => false,
-		    "dreamwidth" => false,
-		    "gnusocial" => false,
-		    "libertree" => false,
-		    "livejournal" => false,
-		    "pumpio" => false,
-		    "twitter" => false,
-		    "tumblr" => false,
-		    "wordpress" => false
-	    ];
-		print json_encode($values, JSON_UNESCAPED_SLASHES);
+		$dir = MEOW_CONFIG_BASE_DIR . "/assets/json";
+		if (!is_dir($dir)) {
+			mkdir($dir, 0777, true);
+		}
+
+		$path = $dir . "/statistics.json";
+		if (!is_file($path)) {
+			$this->createStatisticsJson($path);
+		}
+
+		$today = date('Y-m-d');
+
+		$filetime = date('Y-m-d', filemtime($path));
+
+		if ($today > $filetime) {
+			$this->createStatisticsJson($path);
+		}
+
+		readfile($path);
 	}
 
+	private function getTotalUsers () {
+		$sql = " select count(id) as count from user where actor = '' ";
+		$row = $this->db->query($sql)->row();
+		return $row->count;
+	}
 
+	private function getLocalPosts () {
+		$sql = "
+			select
+				count(m.id) as count
+			from
+				meow m
+				inner join user u
+					on u.id = m.user_id
+					and u.actor = ''
+			where
+				m.is_deleted = 0
+		";
+		$row = $this->db->query($sql)->row();
+		return $row->count;
+	}
 
+	private function activeUsersMonthly () {
+		return $this->activeUsers(date('Y-m-d', strtotime(' - 1 month ')));
+	}
+
+	private function activeUsersHalfyear () {
+		return $this->activeUsers(date('Y-m-d', strtotime(' - 6 month ')));
+	}
+
+	private function activeUsers ($from) {
+		$sql = "
+			select count(a.id) as count
+			from (
+				select
+					u.id
+				from
+					user u
+					inner join meow m
+						on m.user_id = u.id
+						and m.create_at >= '{$from}'
+						and m.is_deleted = 0
+				where
+					u.actor = ''
+				group by
+					u.id
+			) a
+		";
+		$row = $this->db->query($sql)->row();
+		return $row->count;
+	}
+
+	private function createStatisticsJson ($path) {
+
+		$totalUsers = $this->getTotalUsers();
+		$localPosts = $this->getLocalPosts();
+		$activeUsersMonthly = $this->activeUsersMonthly();
+		$activeUsersHalfyear = $this->activeUsersHalfyear();
+
+		$values = [
+			"name" => MEOW_CONFIG_SITE_NAME,
+			"network" => "Meow",
+			"version" => MEOW_VERSION,
+			"registrations_open" => false,
+			"total_users" => $totalUsers,
+			"active_users_halfyear" => $activeUsersHalfyear,
+			"active_users_monthly" => $activeUsersMonthly,
+			"local_posts" => $localPosts,
+			"services" => [
+				"appnet" => false,
+				"buffer" => false,
+				"dreamwidth" => false,
+				"gnusocial" => false,
+				"libertree" => false,
+				"livejournal" => false,
+				"pumpio" => false,
+				"twitter" => false,
+				"tumblr" => false,
+				"wordpress" => false
+			],
+			"appnet" => false,
+			"buffer" => false,
+			"dreamwidth" => false,
+			"gnusocial" => false,
+			"libertree" => false,
+			"livejournal" => false,
+			"pumpio" => false,
+			"twitter" => false,
+			"tumblr" => false,
+			"wordpress" => false
+		];
+		$json = json_encode($values, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+		$json = str_replace(",", ",\n", $json);
+		file_put_contents($path, $json);
+	}
 }

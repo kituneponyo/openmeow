@@ -123,7 +123,7 @@ class Init extends MY_Controller {
 
 	private function initDb () {
 
-		$sqls = file_get_contents(MEOW_CONFIG_BASE_DIR . "/assets/sql/meow.sql");
+		$sqls = file_get_contents(MEOW_CONFIG_BASE_DIR . "/application/assets/sql/meow.sql");
 
 		$sqls = explode(';', $sqls);
 

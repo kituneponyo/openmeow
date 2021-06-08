@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: localhost:3306
--- 生成日時: 2021 年 6 月 03 日 18:22
+-- 生成日時: 2021 年 6 月 09 日 06:07
 -- サーバのバージョン： 10.3.25-MariaDB-log-cll-lve
 -- PHP のバージョン: 7.3.28
 
@@ -12,6 +12,11 @@ SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- データベース: `mfymdexr_meow`
@@ -60,6 +65,29 @@ CREATE TABLE `ap_actor` (
   `host` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `create_at` datetime NOT NULL DEFAULT current_timestamp(),
   `update_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- テーブルの構造 `ap_collection`
+--
+
+CREATE TABLE `ap_collection` (
+  `id` int(11) NOT NULL,
+  `collection` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- テーブルの構造 `ap_collection_object`
+--
+
+CREATE TABLE `ap_collection_object` (
+  `id` int(11) NOT NULL,
+  `collection_id` int(11) NOT NULL,
+  `object_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -282,6 +310,7 @@ CREATE TABLE `meow` (
   `orgfiles` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `has_thumb` tinyint(1) NOT NULL DEFAULT 0,
   `dm_id` int(10) UNSIGNED NOT NULL,
+  `ap_object_id` int(11) NOT NULL,
   `ap_note_id` int(11) NOT NULL DEFAULT 0,
   `reply_to_actor_id` int(11) NOT NULL DEFAULT 0,
   `reply_to_note_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''
@@ -494,6 +523,20 @@ ALTER TABLE `ap_actor`
   ADD UNIQUE KEY `actor_id` (`actor`);
 
 --
+-- テーブルのインデックス `ap_collection`
+--
+ALTER TABLE `ap_collection`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `collection` (`collection`);
+
+--
+-- テーブルのインデックス `ap_collection_object`
+--
+ALTER TABLE `ap_collection_object`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `collection_id` (`collection_id`,`object_id`);
+
+--
 -- テーブルのインデックス `ap_deliver_queue`
 --
 ALTER TABLE `ap_deliver_queue`
@@ -675,6 +718,18 @@ ALTER TABLE `ap_actor`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- テーブルのAUTO_INCREMENT `ap_collection`
+--
+ALTER TABLE `ap_collection`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- テーブルのAUTO_INCREMENT `ap_collection_object`
+--
+ALTER TABLE `ap_collection_object`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- テーブルのAUTO_INCREMENT `ap_deliver_queue`
 --
 ALTER TABLE `ap_deliver_queue`
@@ -818,3 +873,7 @@ ALTER TABLE `ua`
 ALTER TABLE `user`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

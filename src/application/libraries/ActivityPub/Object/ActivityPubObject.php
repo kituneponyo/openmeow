@@ -12,33 +12,48 @@ use Meow\ActivityPub\Actor\Actor;
 
 class ActivityPubObject extends \LibraryBase
 {
-	public static function create ($actor, $content) {
+	public static function load (string $objectId) {
+		$sql = " select * from ap_object where object_id = ? ";
+		return self::db()->query($sql, [$objectId])->row();
+	}
 
+	private static function insertObject ($actor, $object) {
+		$values = [
+			'object_id' => $object->id,
+			'actor_id' => $actor->id,
+			'type' => $object->type,
+			'object' => json_encode($object, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+		];
+		self::db()->insert('ap_object', $values);
+		return self::db()->insert_id();
+	}
+
+	public static function create ($object) {
+
+		if (empty($object->id)) {
+			return false;
+		}
+		if (empty($object->attributedTo)) {
+			return false;
+		}
+
+		$actor = Actor::get($object->attributedTo);
 		if (!$actor) {
 			return false;
 		}
-		if (empty($content->object->id)) {
-			return false;
+
+		$objectRowId = self::insertObject($actor, $object);
+
+		if ($object->type == 'Note') {
+			Note::createFromObject($actor, $object);
 		}
-		if (empty($content->object->type)) {
 
-		}
-
-		$values = [
-			'object_id' => $content->object->id,
-			'actor_id' => $actor->id,
-			'type' => $content->object->type,
-			'object' => json_encode($content->object, JSON_UNESCAPED_SLASHES),
-		];
-
-		self::db()->insert('ap_object', $values);
-
-		if ($content->object->type == 'Note') {
-			Note::create($actor, $content);
-		}
+		return $objectRowId;
 	}
 
 	public static function delete ($content) {
+
+		$result = false;
 
 		// object が string で、https:// で始まる actor == object なら delete person
 		if (is_string($content->object)
@@ -53,10 +68,22 @@ class ActivityPubObject extends \LibraryBase
 		$sql = " select * from ap_note where object_id = ? limit 1 ";
 		if ($apNote = self::db()->query($sql, [$content->object->id])->row()) {
 			Note::delete($content, $apNote);
-			return true;
+			$result = true;
 		}
 
-		return false;
+		// ap_object にある？
+		if ($apObject = self::load($content->object->id)) {
+			$sql = " delete from ap_object where object_id = ? ";
+			self::db()->query($sql, [$content->object->id]);
+
+			// collection から delete しておく
+			$sql = " delete from ap_collection_object where object_id = ? ";
+			self::db()->query($sql, [$apObject->id]);
+
+			$result = true;
+		}
+
+		return $result;
 	}
 
 	public static function update (\stdClass $content) {

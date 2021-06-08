@@ -27,12 +27,14 @@ require_once('ActivityPub/Actor/Actor.php');
 require_once('ActivityPub/Actor/Service.php');
 require_once('ActivityPub/Object/ActivityPubObject.php');
 require_once('ActivityPub/Object/Note.php');
+require_once('ActivityPub/Collection.php');
 
 use Meow\ActivityPub\Activity\LikeActivity;
 use Meow\ActivityPub\Activity\UndoActivity;
 use Meow\ActivityPub\Actor\Actor;
 use Meow\ActivityPub\Object\ActivityPubObject;
 use Meow\ActivityPub\Object\Note;
+use Meow\ActivityPub\Collection;
 
 class ActivityPubService extends LibraryBase
 {
@@ -114,7 +116,6 @@ class ActivityPubService extends LibraryBase
 		$wf = json_decode($wf);
 
 		$profUrl = $wf->links[0]->href;
-
 		$response = self::safe_remote_request('GET', $profUrl, '', 0, false);
 		$body = $response->getBody()->getContents();
 		$actor = json_decode($body);
@@ -137,11 +138,28 @@ class ActivityPubService extends LibraryBase
 		return is_numeric($replyAt) ? $replyAt : 0;
 	}
 
+	public static function getActivityPubObjectRowId (string $objectId) {
+		if ($row = ActivityPubObject::load($objectId)) {
+			return $row->id;
+		}
+		$response = ActivityPubService::safe_remote_get($objectId);
+		$json = $response->getBody()->getContents();
+		$object = json_decode($json);
+		return ActivityPubObject::create($object);
+	}
+
 	public static function processInbox (\stdClass $content) {
 
+		if ($content->type == 'Add') {
+			Collection::add($content->target, $content->object);
+		}
+
+		if ($content->type == 'Remove') {
+			Collection::remove($content->target, $content->object);
+		}
+
 		if ($content->type == 'Create') {
-			$actor = Actor::get($content->actor);
-			ActivityPubObject::create($actor, $content);
+			ActivityPubObject::create($content->object);
 		}
 
 		if ($content->type == 'Delete') {
@@ -164,13 +182,16 @@ class ActivityPubService extends LibraryBase
 
 		$object = $content->object ?? '';
 		if (is_object($object)) {
-			$object = json_encode($object, JSON_UNESCAPED_SLASHES);
+			$object = json_encode($object, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 		}
 
-		// object_id で存在チェック
-		$sql = " select id from inbox where object_id = ? limit 1 ";
-		if (self::db()->query($sql, [$content->id])->row()) {
-			return 202; // 重複あるなら終わる
+		// activity自身にIDがあれば
+		if (!empty($content->id)) {
+			// object_id で存在チェック
+			$sql = " select id from inbox where object_id = ? limit 1 ";
+			if (self::db()->query($sql, [$content->id])->row()) {
+				return 202; // 重複あるなら終わる
+			}
 		}
 
 		MeowLogger::logInbox($content);
@@ -181,7 +202,9 @@ class ActivityPubService extends LibraryBase
 			return 202;
 		}
 
+		// activity に actor が設定されていれば
 		if ($content->actor) {
+			// actor 取得
 			$actor = Actor::get($content->actor);
 			if (!empty($actor->content)) {
 				$actorContent = is_string($actor->content) ? json_decode($actor->content) : $actor->content;
@@ -199,15 +222,17 @@ class ActivityPubService extends LibraryBase
 		// get remote user
 		$remoteUser = $actor ? RemoteUser::get($content->actor) : false;
 
-		$values = [
-			'object_id' => $content->id,
-			'user_id' => ($remoteUser ? $remoteUser->id : 0),
-			'type' => $content->type ?? '',
-			'actor' => $content->actor ?? '',
-			'object' => $object,
-			'content' => $jsonString,
-		];
-		self::db()->insert('inbox', $values);
+		if (!empty($content->id)) {
+			$values = [
+				'object_id' => $content->id,
+				'user_id' => ($remoteUser ? $remoteUser->id : 0),
+				'type' => $content->type ?? '',
+				'actor' => $content->actor ?? '',
+				'object' => $object,
+				'content' => $jsonString,
+			];
+			self::db()->insert('inbox', $values);
+		}
 
 		self::processInbox($content);
 
@@ -231,7 +256,7 @@ class ActivityPubService extends LibraryBase
 
 		// Create
 		if ($content->type == 'Create') {
-			ActivityPubObject::create($actor, $content);
+			ActivityPubObject::create($content->object);
 		}
 
 		// Follow

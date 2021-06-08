@@ -10,7 +10,7 @@ Meowは、穏やかさを大事にする人々のための小規模なSNSです�
 
 快適なコミュニケーションとともに、心を波立たせないために、Meowにはさまざまな工夫があります。
 
-# feature
+# Feature
 
 On Meow, you can't see how many followers others have, or how many likes they have.
 Users don't have to worry about their minds being consumed by superficial comparisons of numbers.
@@ -87,6 +87,14 @@ https://opensource.meow.fan/
 * MySQLのデータベースと、権限を与えたユーザを用意してください。
 * ダウンロードしたファイルを、あなたのサーバに配置してください。
 * https://（あなたのサーバ）/init を実行し、画面の案内に従ってください。
+
+# Notes
+
+Currently, backward compatibility is not considered.
+When upgrading, please pay attention to the DB area.
+
+現状、後方互換は考慮しません。
+アップグレードの際はDB周りなど注意してください。
 
 # Auther
 

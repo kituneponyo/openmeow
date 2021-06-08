@@ -829,7 +829,7 @@ class MeowManager extends LibraryBase
 	}
 
 	public static function createUserInfoJson ($user_id) {
-		$dir = $_SERVER['DOCUMENT_ROOT'] . '/json/user/' . MeowManager::getUserPath($user_id) . "/{$user_id}";
+		$dir = $_SERVER['DOCUMENT_ROOT'] . '/assets/json/user/' . MeowManager::getUserPath($user_id) . "/{$user_id}";
 		if (!is_dir($dir)) {
 			mkdir($dir, 0777, true);
 		}

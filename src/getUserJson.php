@@ -15,7 +15,7 @@ $id0 = substr($paddedId, -1, 1);
 $id1 = substr($paddedId, -2, 1);
 $id2 = substr($paddedId, -3, 1);
 
-$filePath = $_SERVER['DOCUMENT_ROOT'] . "/json/user/{$id0}/{$id1}/{$id2}/{$id}/user.json";
+$filePath = $_SERVER['DOCUMENT_ROOT'] . "/assets/json/user/{$id0}/{$id1}/{$id2}/{$id}/user.json";
 
 if (file_exists($filePath)) {
 	readfile($filePath);

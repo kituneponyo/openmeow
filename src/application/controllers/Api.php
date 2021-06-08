@@ -18,6 +18,12 @@ class Api extends MY_Controller {
     	print $_SERVER['REMOTE_ADDR'];
     }
 
+	public function createUserJson ($id) {
+		if ($path = MeowManager::createUserInfoJson($id)) {
+			readfile($path);
+		}
+	}
+
     public function deliverActivity (int $userId, int $id) {
 
 	    $this->load->library('ActivityPubService');

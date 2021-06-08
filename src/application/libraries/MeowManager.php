@@ -829,9 +829,9 @@ class MeowManager extends LibraryBase
 	}
 
 	public static function createUserInfoJson ($user_id) {
-		$path = $_SERVER['DOCUMENT_ROOT'] . '/json/user/' . MeowManager::getUserPath($user_id) . "/{$user_id}";
-		if (!is_dir($path)) {
-			mkdir($path, 0777, true);
+		$dir = $_SERVER['DOCUMENT_ROOT'] . '/json/user/' . MeowManager::getUserPath($user_id) . "/{$user_id}";
+		if (!is_dir($dir)) {
+			mkdir($dir, 0777, true);
 		}
 		$sql = "
             select
@@ -851,7 +851,8 @@ class MeowManager extends LibraryBase
             where id = {$user_id}
         ";
 		$user = self::db()->query($sql)->row();
-		file_put_contents($path . "/user.json", json_encode($user));
+		$path = $dir . "/user.json";
+		file_put_contents($path, json_encode($user, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+		return $path;
 	}
-
 }

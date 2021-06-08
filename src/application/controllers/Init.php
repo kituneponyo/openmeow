@@ -71,7 +71,7 @@ class Init extends MY_Controller {
 		foreach ($configKeyValues as $k => $v) {
 			$meowConfig->$k = $v;
 		}
-		file_put_contents(MEOW_CONFIG_FILE_PATH, json_encode($meowConfig, JSON_UNESCAPED_SLASHES & JSON_UNESCAPED_UNICODE));
+		file_put_contents(MEOW_CONFIG_FILE_PATH, json_encode($meowConfig, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
 
 		// テーブル作成

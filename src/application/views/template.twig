@@ -132,8 +132,7 @@
     const checkReply = () => {
         // ログイン済、新着未確認のとき
         if (_m.me.id && !$('#tl-r').hasClass('has-latest')) {
-            let path = "/json/user/" + _m.getUserPath(_m.me.id) + "/" + _m.me.id + "/user.json?" + (new Date()).getTime();
-            $.ajax(path)
+            $.ajax('/getUserJson.php?id=' + _m.me.id)
                 .done(checkReplyDone)
                 .fail(checkReplyFail);
         }

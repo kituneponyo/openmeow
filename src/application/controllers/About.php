@@ -11,8 +11,8 @@ class About extends MY_Controller {
 
     public function index (string $page = '') {
 
-	    if ($page == 'meow') {
-		    return $this->meow();
+    	if ($page == 'meow') {
+    		return $this->meow();
 	    }
 
     	$pageName = "about/{$page}";
@@ -23,13 +23,15 @@ class About extends MY_Controller {
         	'page' => $page,
 	        'enableMeowStartButton' => false,
         ]);
+
+        return true;
     }
 
-	public function meow () {
-		$this->display('about/meow.twig', [
-			'enableMeowStartButton' => false,
-		]);
-	}
+    public function meow () {
+	    $this->display('about/meow.twig', [
+		    'enableMeowStartButton' => false,
+	    ]);
+    }
 
 	public function blank () {
     	print "";
@@ -41,22 +43,19 @@ class About extends MY_Controller {
     	print "<?xml version='1.0' encoding='UTF-8'?><rss version='2.0'></rss>";
 	}
 
-	public function api_statusnet_config_json () {
-    	exit;
-	}
 	public function static_terms_of_service_html () {
     	exit;
 	}
 
-	public function api_v1_instance () {
-		print "/api/v1/instance";
+	public function nodeinfo_dummy () {
+    	print $_SERVER['REQUEST_URI'];
 	}
 
 	public function nodeinfo_2_0 () {
     	$values = [
-    		'version' => MEOW_VERSION,
+    		'version' => '2.0',
 		    'software' => [
-		    	'name' => 'meow',
+		    	'name' => MEOW_CONFIG_SITE_NAME,
 			    'version' => MEOW_VERSION,
 		    ],
 		    'protocols' => [
@@ -71,45 +70,29 @@ class About extends MY_Controller {
 			    'localPosts' => 0
 		    ]
 	    ];
-		print json_encode($values, JSON_UNESCAPED_SLASHES);
+    	print json_encode($values);
 	}
 
-	public function manifest () {
-    	$values = [
-			"short_name" => MEOW_CONFIG_SITE_NAME,
-			"name" => MEOW_CONFIG_SITE_NAME,
-			"start_url" => "https://" . MEOW_CONFIG_DB_HOST . "/",
-			"display" => "standalone",
-			"description" => "",
-			"icons" => [[
-				"src" => "/assets/icons/icon_144_144.png",
-				"sizes" => "144x144",
-				"type" => "image/png"
-			]]
-		];
-    	print json_encode($values, JSON_UNESCAPED_SLASHES);
-	}
-	
 	public function statistics () {
-		$dir = MEOW_CONFIG_BASE_DIR . "/assets/json";
-		if (!is_dir($dir)) {
-			mkdir($dir, 0777, true);
-		}
+    	$dir = MEOW_CONFIG_BASE_DIR . "/assets/json";
+    	if (!is_dir($dir)) {
+    		mkdir($dir, 0777, true);
+	    }
 
-		$path = $dir . "/statistics.json";
-		if (!is_file($path)) {
-			$this->createStatisticsJson($path);
-		}
+    	$path = $dir . "/statistics.json";
+    	if (!is_file($path)) {
+    		$this->createStatisticsJson($path);
+	    }
 
-		$today = date('Y-m-d');
+	    $today = date('Y-m-d');
 
-		$filetime = date('Y-m-d', filemtime($path));
+	    $filetime = date('Y-m-d', filemtime($path));
 
-		if ($today > $filetime) {
-			$this->createStatisticsJson($path);
-		}
+	    if ($today > $filetime) {
+		    $this->createStatisticsJson($path);
+	    }
 
-		readfile($path);
+	    readfile($path);
 	}
 
 	private function getTotalUsers () {
@@ -136,11 +119,11 @@ class About extends MY_Controller {
 
 	private function activeUsersMonthly () {
 		return $this->activeUsers(date('Y-m-d', strtotime(' - 1 month ')));
-	}
+    }
 
-	private function activeUsersHalfyear () {
-		return $this->activeUsers(date('Y-m-d', strtotime(' - 6 month ')));
-	}
+    private function activeUsersHalfyear () {
+    	return $this->activeUsers(date('Y-m-d', strtotime(' - 6 month ')));
+    }
 
 	private function activeUsers ($from) {
 		$sql = "
@@ -207,4 +190,6 @@ class About extends MY_Controller {
 		$json = str_replace(",", ",\n", $json);
 		file_put_contents($path, $json);
 	}
+
+
 }

@@ -80,12 +80,15 @@ $route['inbox'] = 'ap/inbox';
 $route['ap/u/(:any)/inbox'] = 'ap/user_inbox/$1';
 $route['ap/u/(:any)/outbox'] = 'ap/user_outbox/$1';
 
-$route['api/v1/instance'] = 'about/api_v1_instance';
+$route['api/v1/instance'] = 'about/nodeinfo_dummy';
+$route['api/nodeinfo'] = 'about/nodeinfo_dummy';
 $route['api/nodeinfo/2.0'] = 'about/nodeinfo_2_0';
 $route['api/nodeinfo/2.0.json'] = 'about/nodeinfo_2_0';
+$route['api/statusnet/config'] = 'about/nodeinfo_dummy';
+$route['api/statusnet/config.json'] = 'about/nodeinfo_dummy';
+$route['main/nodeinfo/2.0'] = 'about/nodeinfo_dummy';
 $route['nodeinfo/2.0'] = 'about/nodeinfo_2_0';
 $route['nodeinfo/2.0.json'] = 'about/nodeinfo_2_0';
-$route['manifest.json'] = 'about/manifest';
 $route['statistics.json'] = 'about/statistics';
 
 $route['about/more'] = 'about/blank'; // 利用規約とか
@@ -94,7 +97,6 @@ $route['about/(:any)'] = 'about/index/$1'; // about 管理者生成
 $route['static/terms-of-service.html'] = 'about/blank'; // プライバシーポリシー
 $route['terms'] = 'about/blank'; // プライバシーポリシー
 
-$route['api/statusnet/config.json'] = 'about/blankJson';
 $route['atom'] = 'about/blankJson';
 $route['feed'] = 'about/blankJson';
 

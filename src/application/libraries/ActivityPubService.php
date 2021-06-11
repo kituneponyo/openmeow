@@ -76,19 +76,17 @@ class ActivityPubService extends LibraryBase
 	}
 
 	public static function sendUndoLike ($me, $favId, $meow) {
-		$apNote = self::getApNote($meow->ap_note_id);
-		$actorRow = Actor::get($apNote->actor_id);
-
-		$likeActivity = LikeActivity::create($favId, $me->actor->id, $apNote->object_id);
+		$apObject = ActivityPubObject::load($meow->ap_object_id);
+		$actorRow = Actor::get($apObject->actor_id);
+		$likeActivity = LikeActivity::create($favId, $me->actor->id, $apObject->object_id);
 		$undoActivity = UndoActivity::create($likeActivity);
-
 		self::safe_remote_post($actorRow->content->inbox, $undoActivity, $me->mid);
 	}
 
 	public static function sendLike ($me, $favId, $meow) {
-		$apNote = self::getApNote($meow->ap_note_id);
-		$actorRow = Actor::get($apNote->actor_id);
-		$activity = LikeActivity::create($favId, $me->actor->id, $apNote->object_id);
+		$apObject = ActivityPubObject::load($meow->ap_object_id);
+		$actorRow = Actor::get($apObject->actor_id);
+		$activity = LikeActivity::create($favId, $me->actor->id, $apObject->object_id);
 		self::safe_remote_post($actorRow->content->inbox, $activity, $me->mid);
 	}
 

@@ -12,8 +12,12 @@ use Meow\ActivityPub\Actor\Actor;
 
 class ActivityPubObject extends \LibraryBase
 {
-	public static function load (string $objectId) {
-		$sql = " select * from ap_object where object_id = ? ";
+	public static function load ($objectId) {
+		if (intval($objectId)) {
+			$sql = " select * from ap_object where id = ? ";
+		} else {
+			$sql = " select * from ap_object where object_id = ? ";
+		}
 		return self::db()->query($sql, [$objectId])->row();
 	}
 

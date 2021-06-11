@@ -46,7 +46,12 @@ class ActivityPubObject extends \LibraryBase
 			return false;
 		}
 
-		$objectRowId = self::insertObject($actor, $object);
+		$apObject = self::load($object->id);
+		if ($apObject) {
+			$objectRowId = $apObject->id;
+		} else {
+			$objectRowId = self::insertObject($actor, $object);
+		}
 
 		if ($object->type == 'Note') {
 			Note::createFromObject($actor, $object);

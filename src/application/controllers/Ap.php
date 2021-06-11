@@ -344,38 +344,6 @@ class Ap extends MY_Controller {
 	    ]);
     }
 
-    public function checkDeletedNote () {
-		$sql = "
-			select *
-			from inbox
-			where
-				type = 'Delete'
-				and object not like 'https://%'
-		";
-		$activities = $this->db->query($sql)->result();
-		foreach ($activities as $a) {
-			$object = json_decode($a->object);
-
-			print "{$a->id}, {$a->actor} => {$object->id} ";
-
-			// 実在チェック
-			$sql = " select * from ap_note where object_id = ? ";
-			$apNote = $this->db->query($sql, [$object->id])->row();
-			if ($apNote) {
-				print "ある（ap_note_id = {$apNote->id}）";
-
-//				$this->deleteNote(json_decode($a->content), $apNote);
-				Note::delete(json_decode($a->content), $apNote);
-
-			} else {
-				print "ない";
-			}
-
-			print "<br>\n";
-
-		}
-    }
-
     public function inbox () {
 		$statusCode = ActivityPubService::sharedInbox();
 	    http_response_code($statusCode);

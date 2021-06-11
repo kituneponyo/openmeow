@@ -483,7 +483,6 @@ CREATE TABLE `user` (
   `show_sensitive` smallint(6) NOT NULL DEFAULT 0,
   `unread_reply_count` tinyint(3) UNSIGNED NOT NULL DEFAULT 0,
   `unread_dm_count` tinyint(3) UNSIGNED NOT NULL DEFAULT 0,
-  `respect_cat` tinyint(1) NOT NULL DEFAULT 0,
   `is_dokusai` tinyint(1) NOT NULL DEFAULT 0,
   `invite_key` varchar(4) COLLATE utf8mb4_unicode_ci NOT NULL,
   `invite_message` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,

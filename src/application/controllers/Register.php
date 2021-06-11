@@ -124,7 +124,6 @@ class Register extends MY_Controller {
 			'name' => $name,
 			'password_hash' => $password_hash,
 			'auth_key' => $auth_key,
-			'respect_cat' => $respect_cat,
 			'follows' => $invite_user ? 1 : 0,
 			'followers' => $invite_user ? 1 : 0,
 			'privkey' => $keyPair['privkey'],

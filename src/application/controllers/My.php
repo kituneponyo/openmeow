@@ -228,7 +228,6 @@ class My extends MY_Controller {
 		$values = [
 			'bgcolor' => $bgcolor,
 			'show_sensitive' => ($_POST['show_sensitive'] ?? 0),
-			'respect_cat' => $respect_cat,
 			'enable_fediverse' => intval($_POST['enable_fediverse'] ?? 0)
 		];
 		$this->db->update('user', $values, ['id' => $me->id]);

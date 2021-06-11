@@ -98,8 +98,6 @@ class Post extends MY_Controller {
 	    	foreach ($datas as $i => $data) {
 			    // base64デコード
 			    if (strpos($data, ",") === false) {
-			    	$ymdhis = date('Ymd_His');
-			    	MeowLogger::log($_SERVER['DOCUMENT_ROOT'] . "/{$ymdhis}.txt", $data);
 			    	continue;
 			    }
 			    list($base64header, $base64data) = explode(',', $data);

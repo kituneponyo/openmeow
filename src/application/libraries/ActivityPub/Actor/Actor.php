@@ -138,16 +138,16 @@ class Actor extends \LibraryBase
 
 		// 当該 actor の meow についたふぁぼを削除
 		$sql = "
-				delete from fav
-				where meow_id in (
-					select m.id
-					from
-						meow m 
-						inner join ap_note n 
-							on n.id = m.ap_note_id
-					where n.actor_id = ?
-				)
-			";
+			delete from fav
+			where meow_id in (
+				select m.id
+				from
+					meow m 
+					inner join ap_object ao 
+						on ao.id = m.ap_object_id
+				where n.actor_id = ?
+			)
+		";
 		self::db()->query($sql, [$apActor->id]);
 
 		// 当該 remote user によるふぁぼを削除
@@ -158,14 +158,14 @@ class Actor extends \LibraryBase
 
 		// 当該 actor の meow を削除
 		$sql = "
-				delete from meow
-				where ap_note_id in (
-					select id
-					from ap_note n 
-					where n.actor_id = ?
-				)
-					and ap_note_id != 0 /* 念のため */
-			";
+			delete from meow
+			where ap_object_id in (
+				select id
+				from ap_object ao 
+				where ao.actor_id = ?
+			)
+				and ap_object_id != 0 /* 念のため */
+		";
 		self::db()->query($sql, [$apActor->id]);
 
 		// 当該 actor の ap_note を削除

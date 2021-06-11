@@ -20,7 +20,7 @@ class MeowManager extends LibraryBase
 			m.fav_count,
 			m.is_paint,
 			m.has_thumb,
-			m.ap_note_id,
+			m.ap_object_id = 0
 			u.mid,
 			u.name,
 			u.icon
@@ -260,7 +260,7 @@ class MeowManager extends LibraryBase
 				and (m.is_private = 0 or (m.is_private <= 1 and m.user_id = {$me->id}))
 				and m.is_deleted = 0
 				and m.reply_to = 0
-				and m.ap_note_id = 0
+				and m.ap_object_id = 0
 				{$where_sensitive}
 				{$where_q}
 				{$where_max}
@@ -293,7 +293,7 @@ class MeowManager extends LibraryBase
 				and m.is_deleted = 0
 				and m.reply_to = 0
 				and m.is_sensitive = 0
-				and m.ap_note_id = 0
+				and m.ap_object_id = 0
 			order by m.create_at desc
 			limit 50
 		";
@@ -383,8 +383,8 @@ class MeowManager extends LibraryBase
 			select
 				{$basicColumns},
 				ru.mid as reply_mid,
-				n.object_id as ap_note_object_id,
-				n.object as ap_note_object
+				ao.object_id as ap_object_id,
+				ao.object as ap_object
 			from
 				meow m 
 				inner join user u
@@ -394,8 +394,8 @@ class MeowManager extends LibraryBase
 					and r.is_deleted = 0
 				left outer join user ru
 					on ru.id = r.user_id
-				left outer join ap_note n
-					on n.id = m.ap_note_id
+				left outer join ap_object ao
+					on ao.id = m.ap_object_id
 			where
 				m.is_deleted = 0
 				{$where_create_at}
@@ -668,7 +668,7 @@ class MeowManager extends LibraryBase
 				and m.is_private = 0
 				and m.is_deleted = 0
 				and m.reply_to = 0
-				and m.ap_note_id = 0
+				and m.ap_object_id = 0
 			order by m.create_at desc
 			limit 50
 		";

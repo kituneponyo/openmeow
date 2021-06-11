@@ -73,14 +73,14 @@ class Meow extends LibraryBase
 			$inReplyTo = null;
 			if ($this->reply_to) {
 				$sql = " 
- 				select n.object_id
- 				from
- 					meow m 
- 					inner join ap_note n
- 						on n.id = m.ap_note_id
- 				where
- 					m.id = ?
- 			";
+	                select ao.object_id
+	                from
+	                    meow m 
+	                    inner join ap_object ao
+	                        on ao.id = m.ap_object_id
+	                where
+	                    m.id = ?
+	            ";
 				if ($row = self::db()->query($sql, [$this->reply_to])->row()) {
 					$inReplyTo = $row->object_id;
 				}

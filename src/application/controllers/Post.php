@@ -208,12 +208,12 @@ class Post extends MY_Controller {
 		    $sql = "
 				select
 					m.user_id,
-					n.object_id as note_id,
-					n.actor_id
+					ao.object_id as note_id,
+					ao.actor_id
 				from
 					meow m
-					left outer join ap_note n 
-						on n.id = m.ap_note_id
+					left outer join ap_object ao 
+						on ao.id = m.ap_object_id
 				where
 					m.id = ?
 			";
@@ -445,8 +445,8 @@ class Post extends MY_Controller {
 				u.twitter_id,
 				u.icon,
 				ru.mid as reply_mid,
-				n.object_id as ap_note_object_id,
-				n.object as ap_note_object
+				ao.object_id as ap_object_id,
+				ao.object as ap_object
 			from
 				meow m 
 				inner join user u
@@ -455,8 +455,8 @@ class Post extends MY_Controller {
 					on r.id = m.reply_to
 				left outer join user ru
 					on ru.id = r.user_id
-				left outer join ap_note n 
-					on n.id = m.ap_note_id
+				left outer join ap_object ao
+					on ao.id = m.ap_object_id
 			where
 				m.id = ?
 				and m.is_deleted = 0

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: localhost:3306
--- 生成日時: 2021 年 6 月 09 日 06:07
+-- 生成日時: 2021 年 6 月 12 日 02:51
 -- サーバのバージョン： 10.3.25-MariaDB-log-cll-lve
 -- PHP のバージョン: 7.3.28
 
@@ -11,12 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- データベース: `mfymdexr_meow`
@@ -565,7 +559,8 @@ ALTER TABLE `ap_note`
 -- テーブルのインデックス `ap_object`
 --
 ALTER TABLE `ap_object`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `object_id` (`object_id`);
 
 --
 -- テーブルのインデックス `ap_service`
@@ -625,7 +620,10 @@ ALTER TABLE `inbox`
 --
 ALTER TABLE `meow`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `create_at` (`create_at`);
+  ADD KEY `create_at` (`create_at`),
+  ADD KEY `ap_note_id` (`ap_note_id`),
+  ADD KEY `ap_object_id` (`ap_object_id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- テーブルのインデックス `mute`
@@ -872,7 +870,3 @@ ALTER TABLE `ua`
 ALTER TABLE `user`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

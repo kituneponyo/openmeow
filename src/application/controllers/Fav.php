@@ -43,9 +43,9 @@ class Fav extends MY_Controller {
     	MeowManager::incrementFavCount($id);
 
     	// remote note の場合、Like を送る
-	    if ($meow->ap_note_id) {
+	    if ($meow->ap_object_id) {
 		    $this->load->library('ActivityPubService');
-	    	ActivityPubService::sendLike($me, $favId, $meow);
+		    ActivityPubService::sendLike($me, $favId, $meow);
 	    }
 
     	print 1;
@@ -79,7 +79,7 @@ class Fav extends MY_Controller {
 	    MeowManager::decrementFavCount($id);
 
 	    // remote note の場合、Undo を送る
-	    if ($meow->ap_note_id) {
+	    if ($meow->ap_object_id) {
 		    $this->load->library('ActivityPubService');
 		    ActivityPubService::sendUndoLike($me, $fav->id, $meow);
 	    }

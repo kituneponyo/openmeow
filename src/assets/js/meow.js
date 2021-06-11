@@ -38,6 +38,7 @@ const _m = {
     regex_twitter: /https:\/\/.*\.?twitter\.com/ig,
     regex_instagram: /https:\/\/www\.instagram\.com/ig,
     regex_amazon: /https:\/\/(amzn\.to|www\.amazon\.co\.jp)/ig,
+    regex_ameblo: /https:\/\/ameblo.jp/ig,
     regex_hashtag: /(^|\s)(#([^#\s"]+))/ig,
     regex_reply_to: /(^|\s)(@([A-Z\d_]+))/ig,
 
@@ -487,6 +488,8 @@ function decorateMeow ($m) {
                 } else if (url.match(_m.regex_instagram)) {
                     url2link($text, url);
                 } else if (url.match(_m.regex_amazon)) {
+                    url2link($text, url);
+                } else if (url.match(_m.regex_ameblo)) {
                     url2link($text, url);
                 } else if (!hasHtmlTag) {
                     // とりあえず remote note でなければ ogp 対応

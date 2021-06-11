@@ -43,98 +43,63 @@ class Note extends \LibraryBase
 		return $note;
 	}
 
-	public static function create ($actor, $content) {
-
-		$values = [
-			'object_id' => $content->object->id,
-			'actor_id' => $actor->id,
-			'acct' => $actor->preferred_username . '@' . $actor->host,
-			'content' => $content->object->content,
-			'object' => '' . json_encode($content->object, JSON_UNESCAPED_SLASHES),
-			'create_at' => $content->published,
-		];
-		self::db()->insert('ap_note', $values);
-		$apNoteId = self::db()->insert_id();
-
+	public static function createFromObject ($actor, $object)
+	{
 		$remoteUser = \RemoteUser::get($actor->content->id);
 
 		// check attachment
 		$files = [];
-		$text = $content->object->content;
-		if (!empty($content->object->attachment)) {
-			foreach ($content->object->attachment as $attach) {
-//				$text = $text . "\n" . '<a href="' . $attach->url . '">' . $attach->url . '</a>';
+		$text = $object->content;
+		if (!empty($object->attachment)) {
+			foreach ($object->attachment as $attach) {
 				$files[] = $attach->url;
 			}
 		}
 		$files = $files ? implode(',', $files) : '';
 
-//		// check emoji tag
-//		if (!empty($content->object->tag)) {
-//			foreach ($content->object->tag as $tag) {
-//				if ($tag->type == 'Emoji')
-//			}
-//		}
-
-
-		$replyTo = !empty($content->object->inReplyTo)
-			? \ActivityPubService::getMeowIdByObjectId($content->object->inReplyTo)
+		$replyTo = !empty($object->inReplyTo)
+			? \ActivityPubService::getMeowIdByObjectId($object->inReplyTo)
 			: 0;
 
-		if (!empty($content->to) && is_array($content->to)) {
+		if (!empty($object->to) && is_array($object->to)) {
 
-			// public 向けなら普通に meow に入れる
-			if (in_array('https://www.w3.org/ns/activitystreams#Public', $content->to)) {
-				$values = [
-					'user_id' => $remoteUser->id,
-					'reply_to' => $replyTo,
-					'text' => $text,
-					'is_sensitive' => ($content->object->sensitive ?? 0),
-					'ap_note_id' => $apNoteId,
-					'files' => $files,
-				];
-				self::db()->insert('meow', $values);
-			}
+			$apObject = ActivityPubObject::load($object->id);
 
-			foreach ($content->to as $to) {
-				if (strpos($to, \Meow::BASE_URL . "/u/") === 0) {
-					$mid = str_replace(\Meow::BASE_URL . "/u/", '', $to);
-					if ($toUser = \MeowUser::getByMid($mid)) {
-						$filename = '';
-						\DirectMessage::insert($remoteUser->id, $toUser, $text, $filename);
+			$sql = " 
+ 					select * 
+ 					from meow 
+ 					where
+ 						user_id = ? 
+ 						and ap_object_id = ?
+				";
+			$row = self::db()->query($sql, [$remoteUser->id, $apObject->id])->row();
+			if ($row) {
+			} else {
+				// public 向けなら普通に meow に入れる
+				if (in_array('https://www.w3.org/ns/activitystreams#Public', $object->to)) {
+					$values = [
+						'user_id' => $remoteUser->id,
+						'reply_to' => $replyTo,
+						'text' => $text,
+						'is_sensitive' => ($object->sensitive ?? 0),
+						'ap_object_id' => $apObject->id,
+						'files' => $files,
+					];
+					self::db()->insert('meow', $values);
+				}
+
+				// 特定の人間宛だった場合、DMとなる
+				foreach ($object->to as $to) {
+					if (strpos($to, \Meow::BASE_URL . "/u/") === 0) {
+						$mid = str_replace(\Meow::BASE_URL . "/u/", '', $to);
+						if ($toUser = \MeowUser::getByMid($mid)) {
+							$filename = '';
+							\DirectMessage::insert($remoteUser->id, $toUser, $text, $filename);
+						}
 					}
 				}
 			}
-		}
 
-		// この actor の、最新100件より古い発言のうち、local user から reply も fav もないものを削除
-		$sql = "
-			select *
-			from meow m
-			where m.user_id = ?
-			order by m.create_at desc
-			limit 1
-			offset 100
-		";
-		if ($row = self::db()->query($sql, [$remoteUser->id])->row()) {
-			$sql = "
-				delete from meow
-				where id in (
-					select
-						m.id
-					from
-						meow m
-						left outer join meow r
-							on r.id = m.reply_to
-						left outer join fav f
-							on f.meow_id = m.id
-					where
-						m.create_at < ?
-						and m.user_id = ?
-						and (r.id is null and f.id is null)
-				)
-			";
-			self::db()->query($sql, [$row->create_at, $remoteUser->id]);
 		}
 	}
 

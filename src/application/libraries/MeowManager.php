@@ -20,7 +20,7 @@ class MeowManager extends LibraryBase
 			m.fav_count,
 			m.is_paint,
 			m.has_thumb,
-			m.ap_object_id = 0
+			m.ap_object_id,
 			u.mid,
 			u.name,
 			u.icon

@@ -280,8 +280,13 @@ class Ap extends MY_Controller {
 			$actor->content = json_decode($actor->content);
 		}
 
+		// follow（未accept状態では、is_accepted = 0 のものがある
+		$sql = " select * from follow where user_id = ? and follow_user_id = ? ";
+		$follow = $this->db->query($sql, [$remoteUser->id, $me->id])->row();
+
 		$accept = [
 			'@context' => 'https://www.w3.org/ns/activitystreams',
+			'id' => Meow::BASE_URL . "/u/{$me->mid}/follow/{$follow->id}/accept",
 			'type' => 'Accept',
 			'actor' => Meow::BASE_URL . "/u/{$me->mid}",
 			'object' => $request->content
@@ -296,26 +301,13 @@ class Ap extends MY_Controller {
 			$sql = " update inbox set apply = 0 where object_id = ? and object = ? ";
 			$this->db->query($sql, [$objectId, $me->actor->id]);
 
-			// 既フォローチェック
-			$sql = " select id from follow where user_id = ? and follow_user_id = ? ";
-			if ($this->db->query($sql, [$remoteUser->id, $me->id])->row()) {
-				$sql = " update follow set is_accepted = 1 where user_id = ? and follow_user_id = ? ";
-				$this->db->query($sql, [$remoteUser->id, $me->id]);
-			} else {
-				// 被フォロー追加
-				$values = [
-					'user_id' => $remoteUser->id,
-					'follow_user_id' => $me->id,
-					'is_accepted' => 1
-				];
-				$this->db->insert('follow', $values);
-			}
+			$sql = " update follow set is_accepted = 1 where user_id = ? and follow_user_id = ? ";
+			$this->db->query($sql, [$remoteUser->id, $me->id]);
 
 		} else {
 
 			print " follow request accept error : http status code = {$statusCode} ";
 			exit;
-
 		}
 
 		redirect('/ap/followRequest');

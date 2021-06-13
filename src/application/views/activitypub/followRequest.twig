@@ -14,7 +14,7 @@
         <div class="box">
             <p><a href="{{ request.content.actor }}" target="_blank">{{ request.content.actor }}</a></p>
             <p>{{ request.create_at }}</p>
-            <form action="/ap/accept" method="post">
+            <form action="/ap/acceptFollow" method="post">
                 <input type="hidden" name="object_id" value="{{ request.object_id }}">
                 <input type="submit" value="フォロー承認">
             </form>

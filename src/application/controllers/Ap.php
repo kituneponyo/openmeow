@@ -230,7 +230,7 @@ class Ap extends MY_Controller {
 	/**
 	 * フォローリクエストに許可を出す
 	 */
-	public function accept () {
+	public function acceptFollow () {
 		$me = $this->getMeOrJumpTop();
 		$objectId = $this->input->post('object_id');
 

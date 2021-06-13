@@ -70,11 +70,6 @@ class ActivityPubService extends LibraryBase
 		$promise->wait();
 	}
 
-	public static function getApNote ($apNoteId) {
-		$sql = " select * from ap_note where id = ? limit 1 ";
-		return self::db()->query($sql, [$apNoteId])->row();
-	}
-
 	public static function sendUndoLike ($me, $favId, $meow) {
 		$apObject = ActivityPubObject::load($meow->ap_object_id);
 		$actorRow = Actor::get($apObject->actor_id);

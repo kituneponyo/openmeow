@@ -73,21 +73,33 @@ class ActivityPubObject extends \LibraryBase
 			return true;
 		}
 
-		// ap_note にある？
-		$sql = " select * from ap_note where object_id = ? limit 1 ";
-		if ($apNote = self::db()->query($sql, [$content->object->id])->row()) {
-			Note::delete($content, $apNote);
-			$result = true;
-		}
-
 		// ap_object にある？
 		if ($apObject = self::load($content->object->id)) {
-			$sql = " delete from ap_object where object_id = ? ";
-			self::db()->query($sql, [$content->object->id]);
+
+			// 対応するmeow取得
+			$sql = " select * from meow where ap_object_id = ? limit 1 ";
+			if ($meow = self::db()->query($sql, [$apObject->id])->row()) {
+
+				// meowについたふぁぼ削除
+				$sql = " delete from fav where meow_id = ? ";
+				self::db()->query($sql, [$meow->id]);
+
+				// meow 削除
+				$sql = " delete from meow where id = ? ";
+				self::db()->query($sql, [$meow->id]);
+			}
 
 			// collection から delete しておく
 			$sql = " delete from ap_collection_object where object_id = ? ";
 			self::db()->query($sql, [$apObject->id]);
+
+			// ap_object 削除
+			$sql = " delete from ap_object where object_id = ? ";
+			self::db()->query($sql, [$content->object->id]);
+
+			// inbox 削除
+			$sql = " delete from inbox where object_id = ? ";
+			self::db()->query($sql, [$content->object->id]);
 
 			$result = true;
 		}

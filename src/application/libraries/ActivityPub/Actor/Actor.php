@@ -168,10 +168,6 @@ class Actor extends \LibraryBase
 		";
 		self::db()->query($sql, [$apActor->id]);
 
-		// 当該 actor の ap_note を削除
-		$sql = " delete from ap_note where actor_id = ? ";
-		self::db()->query($sql, [$apActor->id]);
-
 		// 当該 actor の remote user を削除
 		$sql = "
 				delete from user 

@@ -102,32 +102,4 @@ class Note extends \LibraryBase
 
 		}
 	}
-
-	public static function delete ($content, $apNote) {
-
-		// 対応するmeow取得
-		$sql = " select * from meow where ap_note_id = ? limit 1 ";
-		$meow = self::db()->query($sql, [$apNote->id])->row();
-		if (!$meow) {
-			return false;
-		}
-
-		// meowについたふぁぼ削除
-		$sql = " delete from fav where meow_id = ? ";
-		self::db()->query($sql, [$meow->id]);
-
-		// meow 削除
-		$sql = " delete from meow where id = ? ";
-		self::db()->query($sql, [$meow->id]);
-
-		// ap_note 削除
-		$sql = " delete from ap_note where id = ? ";
-		self::db()->query($sql, [$apNote->id]);
-
-		// inbox 削除
-		$sql = " delete from inbox where object_id = ? ";
-		self::db()->query($sql, [$content->object->id]);
-
-		return true;
-	}
 }

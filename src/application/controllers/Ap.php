@@ -246,23 +246,6 @@ class Ap extends MY_Controller {
 		// request user
 		$actor = Actor::get($request->actor);
 
-		// 知らない人なら取りに行く
-		if (!$actor) {
-
-			$url = $request->actor;
-			$response = ActivityPubService::safe_remote_get($url);
-			if (!$response) {
-				redirect('/ap/followRequest');
-				return true;
-			}
-
-			$json = $response->getBody()->getContents();
-
-			Actor::insert($json);
-
-			$actor = Actor::get($request->actor);
-		}
-
 		if (!$actor) {
 			print "リモートユーザーの情報がありません<br>\n";
 			var_dump($actor);

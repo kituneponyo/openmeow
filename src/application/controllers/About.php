@@ -95,6 +95,22 @@ class About extends MY_Controller {
 	    readfile($path);
 	}
 
+	public static function manifest_json () {
+		$values = [
+			"short_name" => MEOW_CONFIG_SITE_NAME,
+			"name" => MEOW_CONFIG_SITE_NAME,
+			"start_url" => Meow::BASE_URL,
+			"display" => "standalone",
+			"description" => "serenity microbloging service",
+			"icons" => [[
+				"src" => "/assets/icons/meow/icon_144_144.png",
+				"sizes" => "144x144",
+				"type" => "image/png"
+			]]
+		];
+		print json_encode($values, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+	}
+
 	private function getTotalUsers () {
 		$sql = " select count(id) as count from user where actor = '' ";
 		$row = $this->db->query($sql)->row();

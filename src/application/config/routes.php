@@ -90,6 +90,7 @@ $route['main/nodeinfo/2.0'] = 'about/nodeinfo_dummy';
 $route['nodeinfo/2.0'] = 'about/nodeinfo_2_0';
 $route['nodeinfo/2.0.json'] = 'about/nodeinfo_2_0';
 $route['statistics.json'] = 'about/statistics';
+$route['manifest.json'] = 'about/manifest_json';
 
 $route['about/more'] = 'about/blank'; // 利用規約とか
 $route['about/(:any)'] = 'about/index/$1'; // about 管理者生成

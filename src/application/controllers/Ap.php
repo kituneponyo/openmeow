@@ -297,6 +297,70 @@ class Ap extends MY_Controller {
 		return true;
 	}
 
+	/**
+	 * 外部からのフォローリクエストを拒否する
+	 * @return bool
+	 */
+	public function rejectFollow () {
+
+		$me = $this->getMeOrJumpTop();
+		$objectId = $this->input->post('object_id');
+
+		// フォローリクエストのactivity
+		$sql = " select * from inbox where object_id = ? and object = ? ";
+		$request = $this->db->query($sql, [$objectId, $me->actor->id])->row();
+		if (!$request) {
+			header('Location: /ap/followRequest');
+			return true;
+		}
+		$request->content = json_decode($request->content);
+
+		// request user
+		$actor = Actor::get($request->actor);
+		if (!$actor) {
+			print "リモートユーザーの情報がありません<br>\n";
+			exit;
+		}
+
+		// remote user
+		$remoteUser = RemoteUser::get($actor->content->id);
+		if (!$remoteUser) {
+			print "リモートユーザーの情報がありません<br>\n";
+			exit;
+		}
+
+		if (is_string($actor->content)) {
+			$actor->content = json_decode($actor->content);
+		}
+
+		// follow info
+		$sql = " select * from follow where user_id = ? and follow_user_id = ? and is_accepted = 0 ";
+		$follow = $this->db->query($sql, [$remoteUser->id, $me->id])->row();
+
+		$activity = [
+			"@context" => "https://www.w3.org/ns/activitystreams",
+			"id" => Meow::BASE_URL . "/u/{$me->mid}/reject/follow/{$follow->id}",
+			"type" => "Reject",
+			"actor" => Meow::BASE_URL . "/u/{$me->mid}",
+			"object" => (array)$request->content,
+		];
+		unset($activity['object']['@context']);
+		$activity = json_encode($activity, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+		$response = ActivityPubService::safe_remote_post($actor->content->inbox, $activity, $me->mid);
+		if ($response->getStatusCode() == 202) {
+
+			$sql = " delete from follow where id = ? ";
+			$this->db->query($sql, [$follow->id]);
+
+			$sql = " delete from inbox where id = ? ";
+			$this->db->query($sql, $request->id);
+		}
+
+		header('Location: /ap/followRequest');
+		return true;
+	}
+
     public function followRequest () {
     	$me = $this->getMeOrJumpTop();
     	$sql = "

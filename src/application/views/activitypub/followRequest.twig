@@ -18,6 +18,10 @@
                 <input type="hidden" name="object_id" value="{{ request.object_id }}">
                 <input type="submit" value="フォロー承認">
             </form>
+            <form action="/ap/rejectFollow" method="post">
+                <input type="hidden" name="object_id" value="{{ request.object_id }}">
+                <input type="submit" value="フォロー拒否（開発中）">
+            </form>
         </div>
     {% endfor %}
 

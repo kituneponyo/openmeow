@@ -28,12 +28,10 @@ class Ap extends MY_Controller {
 
     	$me = $this->getMe();
 
+    	$error = 0;
+
 	    if ($acct == '@' || strpos($acct, '@') === false || strpos($acct, ':') !== false){
-		    return $this->display('activitypub/userSearch.twig', [
-			    'me' => $me,
-			    'acct' => $acct,
-			    'enableMeowStartButton' => 0,
-		    ]);
+		    $error = 1;
 	    }
 
 	    if ($acct[0] === '@') {
@@ -44,14 +42,14 @@ class Ap extends MY_Controller {
 
 	    // ローカルユーザは検索させない
 	    if ($host == Meow::FQDN) {
-		    return $this->display('activitypub/userSearch.twig', [
-			    'me' => $me,
-			    'acct' => $acct,
-			    'enableMeowStartButton' => 0,
-		    ]);
+		    $error = 1;
 	    }
 
 	    if (!$preferredUsername || !$host) {
+		    $error = 1;
+	    }
+
+	    if ($error) {
 		    return $this->display('activitypub/userSearch.twig', [
 			    'me' => $me,
 			    'acct' => $acct,
@@ -99,17 +97,19 @@ class Ap extends MY_Controller {
 		    $remoteUser = RemoteUser::get($actor->content->id);
 	    }
 
-	    // フォロー状況
+	    // フォロー状況、被フォロー状況
 	    $sql = " select * from follow where user_id = ? and follow_user_id = ? ";
 	    $follow = $this->db->query($sql, [$me->id, $remoteUser->id])->row();
+	    $followed = $this->db->query($sql, [$remoteUser->id, $me->id])->row();
 
-    	return $this->display('activitypub/userSearch.twig', [
+	    return $this->display('activitypub/userSearch.twig', [
 		    'me' => $me,
-    		'acct' => $acct,
+		    'acct' => $acct,
 		    'actor' => $actor->content,
 		    'featured' => ($featured->orderedItems ?? false),
 		    'notes' => ($outbox->orderedItems ?? false),
 		    'followStatus' => $follow,
+		    'followed' => $followed,
 		    'enableMeowStartButton' => 0,
 	    ]);
     }

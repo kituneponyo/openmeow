@@ -24,37 +24,37 @@ class Ap extends MY_Controller {
 
     public function searchUser () {
 
-    	$acct = $this->input->post_get('acct');
+	    $acct = $this->input->post_get('acct');
 
-    	$me = $this->getMe();
+	    $me = $this->getMe();
 
-    	$error = 0;
+	    if (strpos($acct, "https") === 0) {
 
-	    if ($acct == '@' || strpos($acct, '@') === false || strpos($acct, ':') !== false){
-		    $error = 1;
-	    }
+	    } else {
+		    if ($acct == '@' || strpos($acct, '@') === false || strpos($acct, ':') !== false){
+			    return $this->display('activitypub/userSearch.twig', [
+				    'me' => $me,
+				    'acct' => $acct,
+				    'enableMeowStartButton' => 0,
+			    ]);
+		    }
 
-	    if ($acct[0] === '@') {
-		    $acct = substr($acct, 1);
-	    }
+		    if ($acct && $acct[0] === '@') {
+			    $acct = substr($acct, 1);
+		    }
 
-	    list($preferredUsername, $host) = explode('@', $acct);
+		    list($preferredUsername, $host) = explode('@', $acct);
 
-	    // ローカルユーザは検索させない
-	    if ($host == Meow::FQDN) {
-		    $error = 1;
-	    }
-
-	    if (!$preferredUsername || !$host) {
-		    $error = 1;
-	    }
-
-	    if ($error) {
-		    return $this->display('activitypub/userSearch.twig', [
-			    'me' => $me,
-			    'acct' => $acct,
-			    'enableMeowStartButton' => 0,
-		    ]);
+		    // ローカルユーザは検索させない
+		    if ($host == Meow::FQDN
+			    || (!$preferredUsername || !$host)
+		    ) {
+			    return $this->display('activitypub/userSearch.twig', [
+				    'me' => $me,
+				    'acct' => $acct,
+				    'enableMeowStartButton' => 0,
+			    ]);
+		    }
 	    }
 
 	    // キャッシュ見る

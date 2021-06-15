@@ -85,12 +85,12 @@ class ActivityPubService extends LibraryBase
 		self::safe_remote_post($actorRow->content->inbox, $activity, $me->mid);
 	}
 
-	public static function queryActor ($host, $preferredUsername) {
+	public static function queryActor (string $host, string $preferredUsername) {
 
 		$webfingerCacheDir = Meow::BASE_DIR . "/application/cache/webfinger/";
 		FileManager::checkExistsDir($webfingerCacheDir);
 
-		$webfingerCacheFilePath = $webfingerCacheDir . "/" . $host;
+		$webfingerCacheFilePath = $webfingerCacheDir . "/" . $preferredUsername . "@" . $host;
 		if (is_file($webfingerCacheFilePath)) {
 			$ftime = filemtime($webfingerCacheFilePath);
 			// キャッシュの期限は1時間

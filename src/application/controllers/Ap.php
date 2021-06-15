@@ -21,56 +21,58 @@ class Ap extends MY_Controller {
 			'enableMeowStartButton' => 0,
 		]);
 	}
+	private function isCorrectAcct (string $acct) {
 
-    public function searchUser () {
+		if (strpos($acct, '@') === false) {
+			return false;
+		}
 
-	    $acct = $this->input->post_get('acct');
+		// 頭に @ があれば外す
+		if ($acct && $acct[0] === '@') {
+			$acct = substr($acct, 1);
+		}
 
-	    $me = $this->getMe();
+		list($preferredUsername, $host) = explode('@', $acct);
 
-	    if (strpos($acct, "https") === 0) {
+		// ローカルユーザは検索させない
+		if ($host == Meow::FQDN
+			|| (!$preferredUsername || !$host)
+		) {
+			return false;
+		}
 
-	    } else {
-		    if ($acct == '@' || strpos($acct, '@') === false || strpos($acct, ':') !== false){
-			    return $this->display('activitypub/userSearch.twig', [
-				    'me' => $me,
-				    'acct' => $acct,
-				    'enableMeowStartButton' => 0,
-			    ]);
-		    }
+		return $acct;
+	}
 
-		    if ($acct && $acct[0] === '@') {
-			    $acct = substr($acct, 1);
-		    }
+	private function getActor (string $acct) {
+		if (strpos($acct, "https") === 0) {
+			return Actor::get($acct);
+		} elseif ($acct = $this->isCorrectAcct($acct)) {
+			list($preferredUsername, $host) = explode('@', $acct);
+			if ($actor = Actor::get($acct)) {
+				return $actor;
+			} else {
+				return ActivityPubService::queryActor($host, $preferredUsername);
+			}
+		}
+		return false;
+	}
 
-		    list($preferredUsername, $host) = explode('@', $acct);
+	public function searchUser () {
 
-		    // ローカルユーザは検索させない
-		    if ($host == Meow::FQDN
-			    || (!$preferredUsername || !$host)
-		    ) {
-			    return $this->display('activitypub/userSearch.twig', [
-				    'me' => $me,
-				    'acct' => $acct,
-				    'enableMeowStartButton' => 0,
-			    ]);
-		    }
-	    }
+		$acct = (string)$this->input->post_get('acct');
 
-	    // キャッシュ見る
-	    $actor = Actor::get($acct);
-	    if ($actor) {
-	    } else {
-	    	$actor = ActivityPubService::queryActor($host, $preferredUsername);
-	    	if (!$actor) {
-			    return $this->display('activitypub/userSearch.twig', [
-				    'me' => $me,
-				    'acct' => $acct,
-				    'enableMeowStartButton' => 0,
-				    'noResult' => 1,
-			    ]);
-		    }
-	    }
+		$me = $this->getMe();
+
+		$actor = $this->getActor($acct);
+		if (!$actor) {
+			return $this->display('activitypub/userSearch.twig', [
+				'me' => $me,
+				'acct' => $acct,
+				'enableMeowStartButton' => 0,
+				'noResult' => 1,
+			]);
+		}
 
 	    // check service
 	    $service = \Meow\ActivityPub\Actor\Service::load($actor->host);

@@ -102,6 +102,12 @@ class Ap extends MY_Controller {
 	    $follow = $this->db->query($sql, [$me->id, $remoteUser->id])->row();
 	    $followed = $this->db->query($sql, [$remoteUser->id, $me->id])->row();
 
+	    // フォローされている場合、follow activity 取得
+	    if ($followed) {
+	    	$sql = " select * from inbox where actor = ? and type = 'Follow' and object = ? order by create_at desc limit 1 ";
+	    	$followActivity = $this->db->query($sql, [$actor->actor, $me->actor->id])->row();
+	    }
+
 	    return $this->display('activitypub/userSearch.twig', [
 		    'me' => $me,
 		    'acct' => $acct,
@@ -110,6 +116,7 @@ class Ap extends MY_Controller {
 		    'notes' => ($outbox->orderedItems ?? false),
 		    'followStatus' => $follow,
 		    'followed' => $followed,
+		    'followActivity' => ($followActivity ?? null),
 		    'enableMeowStartButton' => 0,
 	    ]);
     }
@@ -334,7 +341,7 @@ class Ap extends MY_Controller {
 		}
 
 		// follow info
-		$sql = " select * from follow where user_id = ? and follow_user_id = ? and is_accepted = 0 ";
+		$sql = " select * from follow where user_id = ? and follow_user_id = ? order by follow_at desc limit 1 ";
 		$follow = $this->db->query($sql, [$remoteUser->id, $me->id])->row();
 
 		$activity = [
@@ -350,11 +357,11 @@ class Ap extends MY_Controller {
 		$response = ActivityPubService::safe_remote_post($actor->content->inbox, $activity, $me->mid);
 		if ($response->getStatusCode() == 202) {
 
-			$sql = " delete from follow where id = ? ";
-			$this->db->query($sql, [$follow->id]);
+			$sql = " delete from follow where user_id = ? and follow_user_id = ? ";
+			$this->db->query($sql, [$remoteUser->id, $me->id]);
 
-			$sql = " delete from inbox where id = ? ";
-			$this->db->query($sql, $request->id);
+			$sql = " delete from inbox where type = 'Follow' and actor = ? and object = ? ";
+			$this->db->query($sql, [$remoteUser->actor, $me->actor->id]);
 		}
 
 		header('Location: /ap/followRequest');

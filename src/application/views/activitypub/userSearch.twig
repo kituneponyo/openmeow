@@ -37,11 +37,13 @@
             <p>{{ actor.summary|raw }}</p>
             {% if followStatus %}
                 {% if followStatus.is_accepted %}
+                    <p>フォローしています</p>
                     <form action="/ap/undoFollowRequest" method="post">
                         <input type="hidden" name="actor" value="{{ actor.id }}">
                         <input type="submit" value="フォロー解除">
                     </form>
                 {% else %}
+                    <p>フォローリクエストしています</p>
                     <form action="/ap/undoFollowRequest" method="post">
                         <input type="hidden" name="actor" value="{{ actor.id }}">
                         <input type="submit" value="フォローリクエスト解除">
@@ -56,7 +58,30 @@
 
             {% if followed %}
                 <div>
-                    <p>フォローされています</p>
+                    <style>
+                        form.float-left {
+                            float: left;
+                            margin: 0 10px 10px 0;
+                        }
+                    </style>
+                    {% if followed.is_accepted %}
+                        <p>フォローされています</p>
+                        <form action="/ap/rejectFollow" method="post">
+                            <input type="hidden" name="object_id" value="{{ followActivity.object_id }}">
+                            <input type="submit" value="被フォロー解除">
+                        </form>
+                    {% else %}
+                        <p>フォローリクエストがあります</p>
+                        <form class="float-left" action="/ap/acceptFollow" method="post">
+                            <input type="hidden" name="object_id" value="{{ followActivity.object_id }}">
+                            <input type="submit" value="フォロー承認">
+                        </form>
+                        <form class="float-left" action="/ap/rejectFollow" method="post">
+                            <input type="hidden" name="object_id" value="{{ followActivity.object_id }}">
+                            <input type="submit" value="フォロー拒否">
+                        </form>
+                        <div class="clear"></div>
+                    {% endif %}
                 </div>
             {% endif %}
 

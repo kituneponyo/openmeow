@@ -690,6 +690,11 @@ iframe.youtube {
     transform: translate(-50%, -50%);
 }
 
+iframe.insert-nico {
+    width: 312px;
+    height: 176px;
+    border: solid 1px #ccc;
+}
 
 .popup-wrapper {
     display: none;

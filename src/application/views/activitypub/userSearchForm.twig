@@ -1,0 +1,25 @@
+<style>
+    form.ap-search-form p {
+        width: 100%;
+        text-align: center;
+    }
+    form.ap-search-form input[type=text] {
+        width:100%;
+        padding: 0.5em;
+    }
+    form.ap-search-form input[type=submit] {
+        text-align: center;
+        margin: 0;
+        padding: 0.5em;
+    }
+</style>
+<div class="box">
+    <form action="/ap/searchUser" method="post" class="ap-search-form">
+        <p style="margin: 0 0 10px 0;">
+            <input type="text" name="acct" value="{{ acct }}" placeholder="@ユーザー名@ホスト名">
+        </p>
+        <p>
+            <input type="submit" value="リモートユーザー検索">
+        </p>
+    </form>
+</div>

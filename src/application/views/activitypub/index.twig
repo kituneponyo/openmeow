@@ -10,6 +10,8 @@
 
     {% include('activitypub/tab.twig')  %}
 
+    {% include('activitypub/userSearchForm.twig')  %}
+
     <div class="box">
 
         <ul>
@@ -46,6 +48,11 @@
                <th>リモートフォロー</th>
                <td>○</td>
                <td>承認必須</td>
+           </tr>
+           <tr>
+               <th>Reject</th>
+               <td>○</td>
+               <td>○</td>
            </tr>
            <tr>
                <th>鍵垢</th>

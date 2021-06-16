@@ -14,12 +14,7 @@
 
     {% include('activitypub/tab.twig')  %}
 
-    <div class="box">
-        <form action="/ap/searchUser" method="post">
-            <input type="text" name="acct" value="{{ acct }}" style="width:calc(100% - 5em);">
-            <input type="submit" value="検索">
-        </form>
-    </div>
+    {% include('activitypub/userSearchForm.twig')  %}
 
     {% if noResult %}
         <div class="box">検索結果はありませんでした。</div>

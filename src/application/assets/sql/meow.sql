@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: localhost:3306
--- 生成日時: 2021 年 6 月 12 日 02:51
+-- 生成日時: 2021 年 6 月 16 日 12:49
 -- サーバのバージョン： 10.3.25-MariaDB-log-cll-lve
 -- PHP のバージョン: 7.3.28
 
@@ -11,10 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
-
---
--- データベース: `mfymdexr_meow`
---
 
 -- --------------------------------------------------------
 
@@ -81,7 +77,8 @@ CREATE TABLE `ap_collection` (
 CREATE TABLE `ap_collection_object` (
   `id` int(11) NOT NULL,
   `collection_id` int(11) NOT NULL,
-  `object_id` int(11) NOT NULL
+  `object_id` int(11) NOT NULL,
+  `create_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -109,39 +106,6 @@ CREATE TABLE `ap_emoji` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `update_at` datetime NOT NULL,
   `icon_image_url` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- テーブルの構造 `ap_follow`
---
-
-CREATE TABLE `ap_follow` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL DEFAULT 0,
-  `actor_id` int(255) NOT NULL DEFAULT 0,
-  `follow_user_id` int(11) NOT NULL DEFAULT 0,
-  `follow_actor_id` int(11) NOT NULL DEFAULT 0,
-  `is_accepted` tinyint(1) NOT NULL DEFAULT 0,
-  `apply` tinyint(1) NOT NULL DEFAULT 1,
-  `create_at` datetime NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- テーブルの構造 `ap_note`
---
-
-CREATE TABLE `ap_note` (
-  `id` int(11) NOT NULL,
-  `object_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `actor_id` int(11) NOT NULL,
-  `acct` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `object` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `create_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -245,7 +209,8 @@ CREATE TABLE `follow` (
   `user_id` int(11) NOT NULL,
   `follow_user_id` int(11) NOT NULL,
   `follow_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `is_accepted` tinyint(1) NOT NULL DEFAULT 0
+  `is_accepted` tinyint(1) NOT NULL DEFAULT 0,
+  `ap_activity_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -428,17 +393,6 @@ CREATE TABLE `setting` (
 -- --------------------------------------------------------
 
 --
--- テーブルの構造 `test`
---
-
-CREATE TABLE `test` (
-  `id` int(11) NOT NULL,
-  `create_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
 -- テーブルの構造 `ua`
 --
 
@@ -540,20 +494,6 @@ ALTER TABLE `ap_deliver_queue`
 --
 ALTER TABLE `ap_emoji`
   ADD PRIMARY KEY (`id`);
-
---
--- テーブルのインデックス `ap_follow`
---
-ALTER TABLE `ap_follow`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`,`actor_id`,`follow_user_id`,`follow_actor_id`);
-
---
--- テーブルのインデックス `ap_note`
---
-ALTER TABLE `ap_note`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `object_id` (`object_id`);
 
 --
 -- テーブルのインデックス `ap_object`
@@ -736,18 +676,6 @@ ALTER TABLE `ap_deliver_queue`
 -- テーブルのAUTO_INCREMENT `ap_emoji`
 --
 ALTER TABLE `ap_emoji`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- テーブルのAUTO_INCREMENT `ap_follow`
---
-ALTER TABLE `ap_follow`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- テーブルのAUTO_INCREMENT `ap_note`
---
-ALTER TABLE `ap_note`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

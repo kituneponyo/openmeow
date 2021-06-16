@@ -21,6 +21,7 @@ class Ap extends MY_Controller {
 			'enableMeowStartButton' => 0,
 		]);
 	}
+
 	private function isCorrectAcct (string $acct) {
 
 		if (strpos($acct, '@') === false) {

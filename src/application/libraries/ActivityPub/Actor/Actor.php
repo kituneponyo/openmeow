@@ -145,7 +145,7 @@ class Actor extends \LibraryBase
 					meow m 
 					inner join ap_object ao 
 						on ao.id = m.ap_object_id
-				where n.actor_id = ?
+				where ao.actor_id = ?
 			)
 		";
 		self::db()->query($sql, [$apActor->id]);

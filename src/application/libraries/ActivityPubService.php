@@ -266,6 +266,27 @@ class ActivityPubService extends LibraryBase
 			}
 		}
 
+		// Reject
+		if ($content->type == 'Reject') {
+			// reject follow from local to remote
+			if ($content->object->type == 'Follow') {
+				$regex = '/^https:\/\/' . Meow::FQDN . '\/u\/(.+?)\/follow\/(\d+)$/';
+				$matches = [];
+				if (preg_match($regex, $content->object->id, $matches)) {
+					if ($matches && count($matches) == 3 && $matches[1] == $user->mid && is_numeric($matches[2])) {
+						$sql = "
+							delete from follow
+							where
+								id = ?
+								and user_id = ?
+								and follow_user_id = ?
+						";
+						self::db()->query($sql, [$matches[2], $user->id, $remoteUser->id]);
+					}
+				}
+			}
+		}
+
 		// Undo
 		if ($content->type == 'Undo') {
 			$sql = " update inbox set apply = 0 where object_id = ? ";

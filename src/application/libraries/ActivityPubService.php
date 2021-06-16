@@ -29,12 +29,16 @@ require_once('ActivityPub/Object/ActivityPubObject.php');
 require_once('ActivityPub/Object/Note.php');
 require_once('ActivityPub/Collection.php');
 
+require_once('Meow/Follow.php');
+
 use Meow\ActivityPub\Activity\LikeActivity;
 use Meow\ActivityPub\Activity\UndoActivity;
 use Meow\ActivityPub\Actor\Actor;
 use Meow\ActivityPub\Object\ActivityPubObject;
 use Meow\ActivityPub\Object\Note;
 use Meow\ActivityPub\Collection;
+
+use Meow\Follow;
 
 class ActivityPubService extends LibraryBase
 {
@@ -254,16 +258,7 @@ class ActivityPubService extends LibraryBase
 
 		// Follow
 		if ($content->type == 'Follow' && $user) {
-			$sql = " select * from follow where user_id = ? and follow_user_id = ? ";
-			$follow = self::db()->query($sql, [$remoteUser->id, $user->id])->row();
-			if (!$follow) {
-				$values = [
-					'user_id' => $remoteUser->id,
-					'follow_user_id' => $user->id,
-					'is_accepted' => 0,
-				];
-				self::db()->insert('follow', $values);
-			}
+			Follow::addRequest($remoteUser->id, $user->id);
 		}
 
 		// Reject
@@ -274,14 +269,7 @@ class ActivityPubService extends LibraryBase
 				$matches = [];
 				if (preg_match($regex, $content->object->id, $matches)) {
 					if ($matches && count($matches) == 3 && $matches[1] == $user->mid && is_numeric($matches[2])) {
-						$sql = "
-							delete from follow
-							where
-								id = ?
-								and user_id = ?
-								and follow_user_id = ?
-						";
-						self::db()->query($sql, [$matches[2], $user->id, $remoteUser->id]);
+						Follow::remove($matches[2], $user->id, $remoteUser->id);
 					}
 				}
 			}

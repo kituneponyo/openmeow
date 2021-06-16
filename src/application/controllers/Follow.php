@@ -5,6 +5,8 @@ class Follow extends MY_Controller {
 
     public function __construct () {
         parent::__construct();
+
+	    require_once(dirname(__DIR__) . "/libraries/Meow/Follow.php");
     }
 
     // 自分がフォローしてる人
@@ -109,12 +111,7 @@ class Follow extends MY_Controller {
 		    die(0);
 	    }
 
-    	$values = [
-    		'user_id' => $me->id,
-		    'follow_user_id' => $id,
-		    'is_accepted' => 1,
-	    ];
-    	$this->db->insert('follow', $values);
+	    Meow\Follow::add($me->id, $id);
 
 	    // フォロー数静的化
 	    $this->calcFollowers($me->id, $id);
@@ -140,8 +137,12 @@ class Follow extends MY_Controller {
 	    	die(0);
 	    }
 
-	    $sql = " delete from follow where user_id = ? and follow_user_id = ? ";
-	    $this->db->query($sql, [$me->id, $id]);
+	    $follow = Meow\Follow::load($me->id, $id);
+	    if (!$follow) {
+		    die(0);
+	    }
+
+	    Meow\Follow::remove($follow->id, $me->id, $id);
 
 	    // フォロー数静的化
 	    $this->calcFollowers($me->id, $id);

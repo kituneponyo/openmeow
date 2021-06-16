@@ -13,16 +13,17 @@ class Follow extends \LibraryBase
 	public static function addRequest  (int $followUserId, int $followedUserId) {
 		// check exists
 		$sql = " select id from follow where user_id = ? and follow_user_id = ? ";
-		$follow = self::db()->query($sql, [$followUserId, $followedUserId])->row();
-		if (!$follow) {
+		if ($follow = self::db()->query($sql, [$followUserId, $followedUserId])->row()) {
+			return $follow->id;
+		} else {
 			$values = [
 				'user_id' => $followUserId,
 				'follow_user_id' => $followedUserId,
 				'is_accepted' => 0,
 			];
 			self::db()->insert('follow', $values);
+			return self::db()->insert_id();
 		}
-		return true;
 	}
 
 	public static function remove (int $rowId, int $followUserId, int $followedUserId) {

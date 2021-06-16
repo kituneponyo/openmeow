@@ -3,6 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 use Meow\ActivityPub\Actor\Actor;
 use Meow\ActivityPub\Object\Note;
+use Meow\follow;
 
 /**
  * ActivityPub
@@ -189,13 +190,7 @@ class Ap extends MY_Controller {
 		    return true;
 	    }
 
-	    $values = [
-	    	'user_id' => $me->id,
-		    'follow_user_id' => $remoteUser->id,
-		    'is_accepted' => 0,
-	    ];
-	    $this->db->insert('follow', $values);
-	    $followId = $this->db->insert_id();
+	    $followId = Follow::addRequest($me->id, $remoteUser->id);
 
 	    $objectId = Meow::BASE_URL . "/u/{$me->mid}/follow/{$followId}";
 	    $request = [

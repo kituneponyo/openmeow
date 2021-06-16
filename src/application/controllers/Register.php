@@ -5,6 +5,8 @@ class Register extends MY_Controller {
 
 	public function __construct () {
 		parent::__construct();
+
+		require_once(dirname(__DIR__) . "/libraries/Meow/Follow.php");
 	}
 
 	public function index () {
@@ -135,14 +137,8 @@ class Register extends MY_Controller {
 
 		// 招待の場合
 		if ($invite_user) {
-			$this->db->insert('follow', [
-				'user_id' => $user_id,
-				'follow_user_id' => $invite_user_id
-			]);
-			$this->db->insert('follow', [
-				'user_id' => $invite_user_id,
-				'follow_user_id' => $user_id
-			]);
+			Meow\Follow::add($user_id, $invite_user_id);
+			Meow\Follow::add($invite_user_id, $user_id);
 		}
 
 		// ログイン

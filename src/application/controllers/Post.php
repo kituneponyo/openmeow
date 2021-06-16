@@ -482,7 +482,7 @@ class Post extends MY_Controller {
 	    		foreach ($object->tag as $tag) {
 	    			if ($tag->type == 'Emoji') {
 	    				if (!empty($tag->icon) && !empty($tag->icon->url)) {
-	    					$meow->text = str_replace($tag->name, '<img class="meow-text-emoji" src="' . $tag->icon->url . '">', $meow->text);
+	    					$meow->text = str_replace($tag->name, '<img class="emoji" src="' . $tag->icon->url . '">', $meow->text);
 					    }
 				    }
 			    }

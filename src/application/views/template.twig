@@ -17,7 +17,7 @@
     <script src="/assets/js/append.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />
-    <link rel="stylesheet" type="text/css" href="/assets/css/style.css?379" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css?380" />
     <link rel="stylesheet" type="text/css" href="/assets/css/append.css" />
 
     {% block head %}{% endblock %}
@@ -245,7 +245,7 @@
                 if (apNoteObject.tag && apNoteObject.tag.length > 0) {
                     apNoteObject.tag.forEach(tag=>{
                         if (tag.type == 'Emoji' && tag.name && tag.icon.url) {
-                            m.text = m.text.replace(tag.name, '<img class="meow-text-emoji" src="' + tag.icon.url + '">');
+                            m.text = m.text.replace(tag.name, '<img class="emoji" src="' + tag.icon.url + '">');
                         }
                     });
                 }

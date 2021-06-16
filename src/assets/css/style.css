@@ -331,11 +331,6 @@ div.meow-box .insert-image.multi-img img {
     height:1.5em;
     vertical-align: middle;
 }
-.meow-text-emoji {
-    height: 1.5em;
-    vertical-align: middle;
-    margin: 0 0.2em;
-}
 div.meow-body {
     float:left;
     margin: 0 0 0 60px;
@@ -918,6 +913,12 @@ div.follower-detail {
     display: none;
 }
 
+.emoji {
+    width: 1.5em;
+    height: 1.5em;
+    vertical-align: middle;
+    margin: 0 0.2em;
+}
 
 /* これは一番最後に置きたい */
 .clear {

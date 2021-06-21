@@ -162,7 +162,26 @@ const _m = {
 
     isReplyMode: () => $('#meows #meow-post-box').length,
 
-    closeCurtain: e => $(e.target).parent().hide()
+    closeCurtain: e => $(e.target).parent().hide(),
+
+    // 表示してる meow の投稿時刻を更新
+    updateDisplayTime: () => $('.meow-box:visible .meow-time').each((i, e) => $(e).text(_m.getDisplayTime($(e).attr('title')))),
+    getDisplayTime: datetime => {
+        let t = new Date(datetime.replace(/-/g,"/"));
+        let diff = ((new Date()).getTime() - t.getTime()) / 1000;
+        if (diff < 60) { // 60秒未満
+            return '今';
+        } else if (diff <= 3600) { // 60分未満
+            return parseInt((diff % 3600) / 60) + "分";
+        } else if (diff <= (24 * 3600)) { // 24時間未満
+            return parseInt((diff % (3600 * 24)) / 3600) + "時間";
+        } else if (diff <= (7 * 24 * 3600)) {
+            return parseInt((diff % (3600 * 24 * 7)) / (3600 * 24)) + "日";
+        } else if (diff <= (12 * 7 * 24 * 3600)) {
+            return t.getMonth() + '月' + t.getDate() + '日';
+        }
+        return t.getFullYear() + '年' + t.getMonth() + '月' + t.getDate() + '日';
+    }
 };
 
 _m.form = {
@@ -993,4 +1012,7 @@ $(()=> {
         .on('touchmove', _m.logSwipe)
         .on('touchstart', _m.logSwipeStart)
         .on('touchend', _m.logSwipeEnd);
+
+    // 1分ごとに表示している meow の時間表示を更新
+    setInterval(_m.updateDisplayTime, 60000);
 });

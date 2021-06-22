@@ -388,6 +388,10 @@
             // 画面からはみ出したら抜ける
             if ($('#meows').height() > window.innerHeight) break;
 
+            // 投稿日時の表記を更新
+            let $meowTime = $tlMeow.find('.meow-time');
+            $meowTime.text(_m.getDisplayTime($meowTime.attr('title')));
+
             $tlMeow.fadeIn(500); // レンダリング
         }
 

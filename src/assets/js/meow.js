@@ -8,6 +8,9 @@ const _m = {
 
     q: '', // 検索語
 
+    config: {
+    },
+
     cache: {
         meows: {},
         'p': {ids: [], lastUpdate: 0}, // LTL
@@ -37,10 +40,21 @@ const _m = {
     regex_nico: /https:\/\/((www|sp)?\.?nicovideo\.jp\/watch|nico\.ms)\/([a-z]m\d+)/ig,
     regex_twitter: /https:\/\/.*\.?twitter\.com/ig,
     regex_instagram: /https:\/\/www\.instagram\.com/ig,
-    regex_amazon: /https:\/\/(amzn\.to|www\.amazon\.co\.jp)/ig,
+    regex_amazon: /https:\/\/www\.amazon\.co\.jp.*?\/(dp|gp\/product)\/([^\/]+)?\/?.*$/ig,
     regex_ameblo: /https:\/\/ameblo.jp/ig,
     regex_hashtag: /(^|\s)(#([^#\s"]+))/ig,
     regex_reply_to: /(^|\s)(@([A-Z\d_]+))/ig,
+
+    ignoreHosts: [
+        'twitter.com',
+        'amzn.to',
+        'ameba.jp',
+        'www.instagram.com',
+        'goo.gl',
+        'bit.ly'
+    ],
+
+    amazonIframeUrl: "//ws-fe.assoc-amazon.com/widgets/cm?lt1=_blank&o=9&p=8&l=as4&asins=$2&t=",
 
     useCrying: () => ($.cookie('useCrying') == "1"),
     postSound: new Audio('/assets/sound/wikimedia_commons_Meow.ogg.mp3'),
@@ -479,18 +493,9 @@ function decorateMeow ($m) {
 
         } else {
 
-            // if (html.match(_m.regex_url)) {
-            //     // Youtube埋込
-            //     if (checkYoutube($text)) {
-            //         $m.find('img.youtube-thumb').on('click', popupYoutube);
-            //         $m.find('img.youtube-play-icon').on('click', e => _popupYoutube($(e.target).prev()));
-            //     }
-            //     _m.checkNico($text); // ニコニコ動画
-            //     _m.checkImage($text); // 画像埋込
-            // }
-
             [ ... html.matchAll(_m.regex_url)].forEach(match => {
                 let url = match[0];
+                let segments = url.split('/');
                 if (url.match(_m.regex_imgurl)) {
                     _m.insertImage($text, url);
                     url2link($text, url);
@@ -499,17 +504,15 @@ function decorateMeow ($m) {
                     $m.find('img.youtube-thumb').on('click', popupYoutube);
                     $m.find('img.youtube-play-icon').on('click', e => _popupYoutube($(e.target).prev()));
                     url2link($text, url);
+                } else if (_m.ignoreHosts.includes(segments[2])) {
+                    url2link($text, url);
                 } else if (url.match(_m.regex_nico)) {
                     [...url.matchAll(_m.regex_nico)].forEach(match => _m.insertNico($text, match[3]));
                     url2link($text, url);
-                } else if (url.match(_m.regex_twitter)) {
-                    url2link($text, url);
-                } else if (url.match(_m.regex_instagram)) {
-                    url2link($text, url);
                 } else if (url.match(_m.regex_amazon)) {
-                    url2link($text, url);
-                } else if (url.match(_m.regex_ameblo)) {
-                    url2link($text, url);
+                    let dp = url.replace(_m.regex_amazon, "https://www.amazon.co.jp/dp/$2");
+                    $text.html($text.html().replace(url, '<a href="' + dp + '" target="_blank">' + dp + '</a>'));
+                    $text.append(url.replace(_m.regex_amazon, "<div class='insert-amazon'><iframe scrolling=no src='" + _m.amazonIframeUrl + "'></iframe></div>"));
                 } else if (!hasHtmlTag) {
                     // とりあえず remote note でなければ ogp 対応
                     checkOgp($text, url);

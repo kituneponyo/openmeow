@@ -691,6 +691,15 @@ iframe.insert-nico {
     border: solid 1px #ccc;
 }
 
+div.insert-amazon {
+    margin: 1em 0 0 0;
+}
+div.insert-amazon iframe {
+    width:120px;
+    height:240px;
+    border: 0;
+}
+
 .popup-wrapper {
     display: none;
     position: fixed;

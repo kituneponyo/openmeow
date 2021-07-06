@@ -6,7 +6,7 @@
 
 # Meow
 
-Meow is a small social network for people who value serenity.
+Meow is a small decentralized social network for people who value serenity.
 
 In order to keep your mind from wavering along with comfortable communication, Meow has a number of innovations.
 

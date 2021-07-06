@@ -35,8 +35,6 @@ If you want to run a full-featured, active server with a large number of users, 
 
 Meowtles is the unofficial (but de facto official) mascot of Meow, created by @reifusen_chan@meow.fan and continued to be drawn a lot by @midorijp@meow.fan.
 
-Meowtlesは、@reifusen_chan@meow.fan によって創作され、@midorijp@meow.fan に多く描かれ続ける、Meowの非公式(ですが、事実上の公式）マスコットです。
-
 <img src="https://opensource.meow.fan/assets/img/meowtles/22563.gif">
 
 # Demos

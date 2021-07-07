@@ -1,9 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.5
+-- version 4.9.7
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: localhost:3306
--- 生成日時: 2021 年 6 月 16 日 12:49
+-- 生成日時: 2021 年 7 月 08 日 05:05
 -- サーバのバージョン： 10.3.25-MariaDB-log-cll-lve
 -- PHP のバージョン: 7.3.28
 
@@ -11,6 +11,12 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
 -- --------------------------------------------------------
 
@@ -270,7 +276,6 @@ CREATE TABLE `meow` (
   `has_thumb` tinyint(1) NOT NULL DEFAULT 0,
   `dm_id` int(10) UNSIGNED NOT NULL,
   `ap_object_id` int(11) NOT NULL,
-  `ap_note_id` int(11) NOT NULL DEFAULT 0,
   `reply_to_actor_id` int(11) NOT NULL DEFAULT 0,
   `reply_to_note_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -284,7 +289,8 @@ CREATE TABLE `meow` (
 CREATE TABLE `mute` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `mute_user_id` int(11) NOT NULL
+  `mute_user_id` int(11) NOT NULL,
+  `create_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -329,11 +335,13 @@ CREATE TABLE `ogp` (
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `site_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `image` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `image` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `thumb` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `image_width` smallint(6) NOT NULL,
   `image_height` smallint(6) NOT NULL,
-  `twitter_card` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL
+  `twitter_card` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `notice` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `update_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -561,7 +569,6 @@ ALTER TABLE `inbox`
 ALTER TABLE `meow`
   ADD PRIMARY KEY (`id`),
   ADD KEY `create_at` (`create_at`),
-  ADD KEY `ap_note_id` (`ap_note_id`),
   ADD KEY `ap_object_id` (`ap_object_id`),
   ADD KEY `user_id` (`user_id`);
 
@@ -633,168 +640,172 @@ ALTER TABLE `user`
   ADD UNIQUE KEY `mid` (`mid`);
 
 --
--- ダンプしたテーブルのAUTO_INCREMENT
+-- ダンプしたテーブルの AUTO_INCREMENT
 --
 
 --
--- テーブルのAUTO_INCREMENT `album`
+-- テーブルの AUTO_INCREMENT `album`
 --
 ALTER TABLE `album`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ap_activity`
+-- テーブルの AUTO_INCREMENT `ap_activity`
 --
 ALTER TABLE `ap_activity`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ap_actor`
+-- テーブルの AUTO_INCREMENT `ap_actor`
 --
 ALTER TABLE `ap_actor`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ap_collection`
+-- テーブルの AUTO_INCREMENT `ap_collection`
 --
 ALTER TABLE `ap_collection`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ap_collection_object`
+-- テーブルの AUTO_INCREMENT `ap_collection_object`
 --
 ALTER TABLE `ap_collection_object`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ap_deliver_queue`
+-- テーブルの AUTO_INCREMENT `ap_deliver_queue`
 --
 ALTER TABLE `ap_deliver_queue`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ap_emoji`
+-- テーブルの AUTO_INCREMENT `ap_emoji`
 --
 ALTER TABLE `ap_emoji`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ap_object`
+-- テーブルの AUTO_INCREMENT `ap_object`
 --
 ALTER TABLE `ap_object`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ap_service`
+-- テーブルの AUTO_INCREMENT `ap_service`
 --
 ALTER TABLE `ap_service`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `bookmark`
+-- テーブルの AUTO_INCREMENT `bookmark`
 --
 ALTER TABLE `bookmark`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `dm`
+-- テーブルの AUTO_INCREMENT `dm`
 --
 ALTER TABLE `dm`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `fav`
+-- テーブルの AUTO_INCREMENT `fav`
 --
 ALTER TABLE `fav`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `file`
+-- テーブルの AUTO_INCREMENT `file`
 --
 ALTER TABLE `file`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `follow`
+-- テーブルの AUTO_INCREMENT `follow`
 --
 ALTER TABLE `follow`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `host`
+-- テーブルの AUTO_INCREMENT `host`
 --
 ALTER TABLE `host`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `inbox`
+-- テーブルの AUTO_INCREMENT `inbox`
 --
 ALTER TABLE `inbox`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `meow`
+-- テーブルの AUTO_INCREMENT `meow`
 --
 ALTER TABLE `meow`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `mute`
+-- テーブルの AUTO_INCREMENT `mute`
 --
 ALTER TABLE `mute`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `mute_word`
+-- テーブルの AUTO_INCREMENT `mute_word`
 --
 ALTER TABLE `mute_word`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `notice`
+-- テーブルの AUTO_INCREMENT `notice`
 --
 ALTER TABLE `notice`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ogp`
+-- テーブルの AUTO_INCREMENT `ogp`
 --
 ALTER TABLE `ogp`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `page`
+-- テーブルの AUTO_INCREMENT `page`
 --
 ALTER TABLE `page`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `password_reminder`
+-- テーブルの AUTO_INCREMENT `password_reminder`
 --
 ALTER TABLE `password_reminder`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `reply`
+-- テーブルの AUTO_INCREMENT `reply`
 --
 ALTER TABLE `reply`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `setting`
+-- テーブルの AUTO_INCREMENT `setting`
 --
 ALTER TABLE `setting`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `ua`
+-- テーブルの AUTO_INCREMENT `ua`
 --
 ALTER TABLE `ua`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- テーブルのAUTO_INCREMENT `user`
+-- テーブルの AUTO_INCREMENT `user`
 --
 ALTER TABLE `user`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

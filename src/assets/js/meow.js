@@ -202,6 +202,15 @@ const _m = {
             return t.getMonth() + '月' + t.getDate() + '日';
         }
         return t.getFullYear() + '年' + t.getMonth() + '月' + t.getDate() + '日';
+    },
+
+    checkUpdate: v => {
+        if (v && v != _m.version) {
+            let msg = 'アップデートがありました。画面を更新します。\n現在のバージョン:' + _m.version + "\n新しいバージョン:" + v;
+            if (confirm(msg)) {
+                location.reload();
+            }
+        }
     }
 };
 

@@ -112,34 +112,97 @@ class Api extends MY_Controller {
     }
 
     public function getLatest () {
-    	$me = $this->getMe();
 
-    	$lastUpdate = date('Y-m-d H:i:s', $this->input->post_get('last_update'));
+	    $me = $this->getMe();
+
+	    $lastUpdate = date('Y-m-d H:i:s', $this->input->post_get('last_update'));
 
 	    $q = $this->input->post('q');
+
+	    $albumId = $this->input->post('albumId');
 
 	    $max = $this->input->post('max');
 
 	    $mid = $this->input->post('u');
 	    $user = MeowManager::getUser($mid);
 
-    	$tl = $this->input->post_get('tl') ?? 'p';
-    	if ($tl == 'h') {
-		    $meows = MeowManager::getHomeTimeline($me, $lastUpdate, $q, $max);
-	    } elseif ($tl == 'e') {
-		    $meows = MeowManager::getPrivateTimeline($me, $lastUpdate, $q, $max);
-	    } elseif ($tl == 'r') {
-		    $meows = MeowManager::getNotices($me, $lastUpdate, $q, $max);
-		    MeowManager::checkNotice($me);
-	    } elseif ($tl == 'u') {
-		    $meows = MeowManager::getUserTimeLine($me, $user, '', $lastUpdate, $q, $max);
-	    } elseif ($tl == 'um') {
-    		$meows = MeowManager::getUserTimeLine($me, $user, 'media', $lastUpdate, $q, $max);
+	    $params = [
+		    'q' => $q,
+		    'albumId' => $albumId,
+		    'lastUpdate' => $lastUpdate,
+		    'max' => $max,
+	    ];
+
+	    if ($albumId) {
+		    $meows = MeowManager::getAlbumTimeLine($me, $params);
 	    } else {
-    		$meows = MeowManager::getMyPublicTimeLine($me, $lastUpdate, $q, $max);
+		    $tl = $this->input->post_get('tl') ?? 'l';
+		    if ($tl == 'h') {
+			    $meows = MeowManager::getHomeTimeline($me, $lastUpdate, $q, $max);
+		    } elseif ($tl == 'e') {
+			    $meows = MeowManager::getPrivateTimeline($me, $lastUpdate, $q, $max);
+		    } elseif ($tl == 'r') {
+			    $meows = MeowManager::getNotices($me, $lastUpdate, $q, $max);
+			    MeowManager::checkNotice($me);
+		    } elseif ($tl == 'u') {
+			    $meows = MeowManager::getUserTimeLine($me, $user, '', $lastUpdate, $q, $max);
+		    } elseif ($tl == 'um') {
+			    $meows = MeowManager::getUserTimeLine($me, $user, 'media', $lastUpdate, $q, $max);
+		    } else {
+			    $meows = MeowManager::getMyPublicTimeLine($me, $params);
+		    }
 	    }
 
-	    print json_encode($meows);
+	    if ($me) {
+		    // meow ids
+		    $ids = [];
+		    foreach ($meows as $meow) {
+			    $ids[] = $meow->id;
+		    }
+
+		    // favs, bookmarks
+		    if ($ids) {
+			    $sql = "
+					select group_concat(f.meow_id) as ids
+					from fav f
+					where
+						f.user_id = {$me->id}
+						and f.meow_id in ?
+				";
+			    if ($row = $this->db->query($sql, [$ids])->row()) {
+				    $favs = explode(',', $row->ids);
+			    } else {
+				    $favs = [];
+			    }
+
+			    $sql = "
+						select group_concat(b.meow_id) as ids
+						from bookmark b
+						where
+							b.user_id = {$me->id}
+							and b.meow_id in ?
+					";
+			    if ($row = $this->db->query($sql, [$ids])->row()) {
+				    $bookmarks = explode(',', $row->ids);
+			    } else {
+				    $bookmarks = [];
+			    }
+
+		    } else {
+			    $favs = [];
+			    $bookmarks = [];
+		    }
+
+	    }
+
+	    $values = [
+		    'version' => MEOW_VERSION,
+		    'meows' => $meows,
+		    'favs' => $favs,
+		    'bookmarks' => $bookmarks,
+	    ];
+
+	    print json_encode($values, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     private function updateMeow ($set) {

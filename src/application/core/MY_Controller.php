@@ -4,7 +4,7 @@ ini_set('max_file_uploads', 10);
 
 ini_set('display_errors', "off");
 
-const MEOW_VERSION = "0.0.1";
+const MEOW_VERSION = "0.0.3";
 
 const MEOW_IS_DEBUG = false;
 
@@ -27,6 +27,8 @@ define('MEOW_CONFIG_DB_HOST', $meowConfig->dbHost ?? '');
 define('MEOW_CONFIG_DB_USER', $meowConfig->dbUser ?? '');
 define('MEOW_CONFIG_DB_PASSWORD', $meowConfig->dbPassword ?? '');
 define('MEOW_CONFIG_DB_NAME', $meowConfig->dbName ?? '');
+
+$meowConfig->version = MEOW_VERSION;
 
 /**
  * Class MY_Controller

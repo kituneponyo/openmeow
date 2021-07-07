@@ -221,7 +221,73 @@ class MeowManager extends LibraryBase
 		return $meows;
 	}
 
-	public static function getMyPublicTimeLine ($me, $lastUpdate = false, $q = '', $max = 0) {
+	public static function getAlbumTimeLine ($me, $params) {
+
+		$lastUpdate = $params['lastUpdate'];
+		$q = $params['q'];
+		$albumId = $params['albumId'];
+		$max = $params['max'];
+
+		if (!$me) {
+			return false;
+		}
+
+		$params = [
+			$albumId,
+			($lastUpdate ? $lastUpdate : date('Y-m-d H:i:s', strtotime(' - 1 day ')))
+		];
+
+		$where_sensitive = $me->show_sensitive
+			? " "
+			: " and m.is_sensitive = 0 ";
+
+		if ($q) {
+			$where_q = " and (m.text like ? or u.name = ?)";
+			$params[] = "%{$q}%";
+			$params[] = $q;
+		} else {
+			$where_q = '';
+		}
+
+		$where_max = $max ? " and m.create_at < '{$max}' " : '';
+
+		$basicColumns = self::getBasicColumns();
+
+		$sql = "
+			select
+				{$basicColumns},
+				'' as reply_mid				
+			from
+				bookmark b
+				inner join meow m 
+					on m.id = b.meow_id
+				inner join user u
+					on u.id = m.user_id
+			where
+				b.album_id = ?
+				and m.create_at > ?
+				and (m.is_private = 0 or (m.is_private <= 1 and m.user_id = {$me->id}))
+				and m.is_deleted = 0
+				and m.reply_to = 0
+				and m.ap_object_id = 0
+				{$where_sensitive}
+				{$where_q}
+				{$where_max}
+				and m.user_id not in (select mute_user_id from mute where user_id = {$me->id})
+			order by m.create_at desc
+			limit 50
+		";
+		$meows = self::db()->query($sql, $params)->result();
+
+		return self::decorateMeows($meows);
+	}
+
+	public static function getMyPublicTimeLine ($me, $params) {
+
+		$lastUpdate = $params['lastUpdate'];
+		$q = $params['q'];
+		$albumId = $params['albumId'];
+		$max = $params['max'];
 
 		if (!$me) {
 			return false;

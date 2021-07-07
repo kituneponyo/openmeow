@@ -13,7 +13,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 
-    <script src="/assets/js/meow.js?514"></script>
+    <script src="/assets/js/meow.js?515"></script>
     <script src="/assets/js/append.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" media="print" onload="this.media='all'"/>
@@ -272,7 +272,18 @@
 
     function mergeLatest (data) {
 
-        let meows = JSON.parse(data);
+        let result = JSON.parse(data);
+
+        _m.checkUpdate(result.version);
+
+        let meows = [];
+        if (result.meow) {
+            meows = [result.meow];
+        } else if (result.meows) {
+            meows = result.meows;
+        } else {
+            meows = result;
+        }
 
         // ここで定義した tlMeows は動的で、変更がダイレクトに反映されるので、ループ内で再取得不要
         let tlMeows = document.getElementById('meows').getElementsByClassName('meow-box');
@@ -628,6 +639,8 @@
                 </li>
 
             </ul>
+
+            <p id="user-menu-ver"></p>
 
             <div class="close-btn" onclick="_m.toggleMenu();"></div>
         </div>

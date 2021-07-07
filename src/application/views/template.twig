@@ -13,85 +13,20 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 
-    <script src="/assets/js/meow.js?512"></script>
+    <script src="/assets/js/meow.js?513"></script>
     <script src="/assets/js/append.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" media="print" onload="this.media='all'"/>
-    <link rel="stylesheet" type="text/css" href="/assets/css/style.css?381" media="print" onload="this.media='all'"/>
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css?382" media="print" onload="this.media='all'"/>
     <link rel="stylesheet" type="text/css" href="/assets/css/append.css" media="print" onload="this.media='all'"/>
 
     {% block head %}{% endblock %}
 </head>
 
 <style>
-    div.ogp {
-        border: solid 1px gainsboro;
-        padding: 10px;
-    }
-    div.ogp img {
-        max-width: 30%;
-        float:left;
-        margin: 0 10px 10px 0;
-    }
-    div.ogp p.ogp-title {
-        font-size: larger;
-        font-weight: bold;
-    }
-    div.ogp p.ogp-description {
-    }
 </style>
 
 <script>
-
-    function insertOgp ($text, ogp) {
-
-        let html = $text.html();
-
-        if (ogp.url && ogp.title) {
-            let $ogpHtml = $('<div class="ogp"></div>');
-            if (ogp.thumb) {
-                $ogpHtml.append('<img src="' + ogp.thumb + '">');
-            } else if (ogp.image) {
-                $ogpHtml.append('<img src="' + ogp.image + '">');
-            }
-            $ogpHtml.append('<p class="ogp-title">' + ogp.title + '</p>');
-            if (ogp.description) {
-                $ogpHtml.append('<p class="ogp-description">' + ogp.description + '</p>');
-            }
-            $ogpHtml.append('<p class="clear"></p>');
-            $ogpHtml.append('<p class="ogp-link"><a href="' + ogp.url + '" target="_blank">' + ogp.url + '</a></p>');
-            html = html.replace(ogp.url, $ogpHtml.prop('outerHTML'));
-        } else {
-            html = html.replace(ogp.url, '<a href="' + ogp.url + '" target="_blank">' + ogp.url + '</a>');
-        }
-
-        $text.html(html);
-    }
-
-    function checkOgp ($text, url) {
-        let urlKey = url;
-        let ogpCache = localStorage.ogp ? JSON.parse(localStorage.ogp) : {};
-        if (ogpCache[urlKey]) {
-            let ogp = ogpCache[urlKey];
-            insertOgp($text, ogp);
-        } else {
-            $.ajax("/api/getOgp", {
-                'method': 'POST',
-                'data': {
-                    'url': url
-                }
-            })
-                .done(data => {
-                    let ogp = JSON.parse(data);
-                    if (ogp.url) {
-                        ogpCache[urlKey] = ogp;
-                        localStorage.ogp = JSON.stringify(ogpCache);
-                    }
-                    insertOgp($text, ogp);
-                });
-        }
-
-    }
 
     let meow = {
 

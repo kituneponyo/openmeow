@@ -929,6 +929,22 @@ div.follower-detail {
     margin: 0 0.2em;
 }
 
+/* ogp */
+
+div.ogp {
+    border: solid 1px #dcdcdc;
+    padding: 10px;
+}
+div.ogp img {
+    max-width: 30%;
+    float:left;
+    margin: 0 10px 10px 0;
+}
+div.ogp p.ogp-title {
+    font-size: larger;
+    font-weight: bold;
+}
+
 /* これは一番最後に置きたい */
 .clear {
     clear:both;

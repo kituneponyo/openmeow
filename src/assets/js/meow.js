@@ -214,6 +214,75 @@ _m.form = {
     isOverScroll: () => (window.scrollY > $('#meow-post-box').position().top)
 };
 
+_m.ogp = {
+    check: ($text, url) => {
+        let ogpCache = localStorage.ogp ? JSON.parse(localStorage.ogp) : {};
+        if (ogpCache[url]) {
+            let ogp = ogpCache[url];
+            if (ogp.update_at) {
+                _m.ogp.insert($text, ogp);
+            } else {
+                _m.ogp.get($text, url);
+            }
+        } else {
+            _m.ogp.get($text, url);
+        }
+        // ついでにキャッシュ期限過ぎたやつを消していく
+        _m.ogp.checkExpiredCache();
+    },
+    get: ($text, url) => {
+        $.post("/api/getOgp", {'url': url})
+            .done(data => {
+                let ogp = JSON.parse(data);
+                if (ogp.url) {
+                    let ogpCache = localStorage.ogp ? JSON.parse(localStorage.ogp) : {};
+                    ogpCache[url] = ogp;
+                    if (!ogp.update_at) {
+                        let now = new Date();
+                        ogp.update_at = now.getFullYear() + "-" + now.getMonth() + '-' + now.getDate() + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+                    }
+                    localStorage.ogp = JSON.stringify(ogpCache);
+                }
+                _m.ogp.insert($text, ogp);
+            });
+    },
+    insert: ($text, ogp) => {
+        let html = $text.html();
+        if (ogp.url && ogp.title) {
+            let $ogpHtml = $('<div class="ogp"></div>');
+            if (ogp.thumb) {
+                $ogpHtml.append('<img src="' + ogp.thumb + '">');
+            } else if (ogp.image) {
+                $ogpHtml.append('<img src="' + ogp.image + '">');
+            }
+            $ogpHtml.append('<p class="ogp-title">' + ogp.title + '</p>');
+            if (ogp.description) {
+                $ogpHtml.append('<p class="ogp-description">' + ogp.description + '</p>');
+            }
+            $ogpHtml.append('<p class="clear"></p>');
+            $ogpHtml.append('<p class="ogp-link"><a href="' + ogp.url + '" target="_blank">' + ogp.url + '</a></p>');
+            html = html.replace(ogp.url, $ogpHtml.prop('outerHTML'));
+        } else {
+            html = html.replace(ogp.url, '<a href="' + ogp.url + '" target="_blank">' + ogp.url + '</a>');
+        }
+        $text.html(html);
+    },
+    checkExpiredCache: () => {
+        let ogps = JSON.parse(localStorage.ogp);
+        let urls = Object.keys(ogps);
+        let now = (new Date()).getTime();
+        urls.forEach(url => {
+            let ogp = ogps[url];
+            let diff = now - Date.parse(ogp.update_at);
+            // 1週間
+            if (diff > (3600 * 24 * 7)) {
+                delete(ogps[url]);
+                localStorage.ogp = JSON.stringify(ogps);
+            }
+        });
+    }
+};
+
 _m.clearMeowCache();
 
 function deleteMeow (id) {
@@ -515,7 +584,8 @@ function decorateMeow ($m) {
                     $text.append(url.replace(_m.regex_amazon, "<div class='insert-amazon'><iframe scrolling=no src='" + _m.amazonIframeUrl + "'></iframe></div>"));
                 } else if (!hasHtmlTag) {
                     // とりあえず remote note でなければ ogp 対応
-                    checkOgp($text, url);
+                    // checkOgp($text, url);
+                    _m.ogp.check($text, url);
                 }
             });
         }

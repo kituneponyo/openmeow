@@ -28,12 +28,12 @@
                 let post_is_private = formData.get('private');
                 $.cookie('post_is_private', post_is_private, {expires: 365, path: '/'});
 
-                meow.uploadFiles = [];
+                _m.uploadFiles = [];
                 $('#new-previews').empty();
 
                 $('.meow-post-form')[0].reset();
                 $('.meow-post-is-private').prop('checked', $('.meow-post-is-private').val() == post_is_private);
-                meow.isExistsLatest = true;
+                _m.isExistsLatest = true;
 
                 _m.useCrying() && _m.postSound.play();
 
@@ -61,7 +61,7 @@
                     // かつ、tl = l にする（リプライが見えないから）
                     changeTab('l');
                 } else {
-                    meow.isExistsLatest = true;
+                    _m.isExistsLatest = true;
                     getLatestDiff();
                 }
 
@@ -72,18 +72,18 @@
     }
 
     function postMeow () {
-        if ($('#meow-post-text').val() == '' && meow.uploadFiles.length == 0) {
+        if ($('#meow-post-text').val() == '' && _m.uploadFiles.length == 0) {
             return postError('空欄です');
         }
 
         // 画像hiddenをいったん削除
         $('#meow-post-form input[name=newFiles]').remove();
         // 画像がある場合、hiddenタグを挿入
-        if (meow.uploadFiles.length > 0) {
+        if (_m.uploadFiles.length > 0) {
             $('#meow-post-form').append('<input type="hidden" name="newFiles">');
-            $('#meow-post-form input[name=newFiles]').val(meow.uploadFiles.join('|'));
+            $('#meow-post-form input[name=newFiles]').val(_m.uploadFiles.join('|'));
             $('#meow-post-form').append('<input type="hidden" name="newFileNames">');
-            $('#meow-post-form input[name=newFileNames]').val(meow.uploadFileNames.join('|'));
+            $('#meow-post-form input[name=newFileNames]').val(_m.uploadFileNames.join('|'));
         }
 
         if (['p', 'l', 'h', 'e'].includes(_m.tl)) {

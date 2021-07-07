@@ -8,6 +8,13 @@ const _m = {
 
     q: '', // 検索語
 
+    isExistsLatest: false,
+
+    currentMeowId: 0,
+
+    uploadFileNames: [],
+    uploadFiles: [],
+
     config: {
     },
 
@@ -383,16 +390,16 @@ const checkYoutube = $e => [...$e.text().matchAll(_m.regex_youtube)].every(m => 
 function deleteNewPreview (e) {
     let $p = $(e.target).parent('.new-preview');
     let index = $p.attr('fileIndex');
-    meow.uploadFiles[index] = '';
-    meow.uploadFileNames[index] = '';
+    _m.uploadFiles[index] = '';
+    _m.uploadFileNames[index] = '';
     $p.remove();
 }
 
 function appendFile (data) {
-    let index = meow.uploadFiles.length;
-    meow.uploadFiles[index] = data;
-    if (meow.uploadFiles.length > meow.uploadFileNames.length) {
-        meow.uploadFileNames.push('');
+    let index = _m.uploadFiles.length;
+    _m.uploadFiles[index] = data;
+    if (_m.uploadFiles.length > _m.uploadFileNames.length) {
+        _m.uploadFileNames.push('');
     }
     let $newImg = $(document.createElement('img'));
 
@@ -422,7 +429,7 @@ function onMeowFormReadImgFile () {
             files.forEach(file=>{
                 let _reader = new FileReader();
                 _reader.onload = onLoadFile;
-                meow.uploadFileNames.push(file.name);
+                _m.uploadFileNames.push(file.name);
                 _reader.readAsDataURL(file);
             });
         }
@@ -639,7 +646,7 @@ function changeBookmark (id, v) {
 }
 
 function popupBookmarkMenu (id) {
-    meow.currentMeowId = id;
+    _m.currentMeowId = id;
     let $m = $('#meow-' + id + ' .bookmark');
     $m.hasClass('bookmark-on') ? $('#bookmark-menu-remove').show() : $('#bookmark-menu-remove').hide();
     $('#bookmark-menu-wrap').show();
@@ -673,7 +680,7 @@ function queryBookmark () {
 }
 
 const getMeowById = id => $('#meow-' + id);
-const getCurrentMeow =()=> getMeowById(meow.currentMeowId);
+const getCurrentMeow =()=> getMeowById(_m.currentMeowId);
 
 function copySelectedMeowUrl () {
     let $m = getCurrentMeow();
@@ -704,7 +711,7 @@ function shareSelectedMeowToTwitter () {
     return false;
 }
 
-const selectShare = meowid => (meow.currentMeowId = meowid) && $('#select-share-wrapper').show();
+const selectShare = meowid => (_m.currentMeowId = meowid) && $('#select-share-wrapper').show();
 
 const selectPainter =()=> $('#select-painter-wrapper').show();
 
@@ -730,7 +737,7 @@ function unlockApplePlaySound () {
 function onSearchFormSubmit() {
     meow.searchWord = _m.q; // 実際に検索されたワードを保存
     _m.updateAt = 0;
-    meow.isExistsLatest = true;
+    _m.isExistsLatest = true;
     _m.clearMeowCache();
     return getLatestDiff();
 }
@@ -754,7 +761,7 @@ function onClearSearchWordClick () {
         _m.q = '';
         $('#search-text').val('');
         _m.updateAt = 0;
-        meow.isExistsLatest = true;
+        _m.isExistsLatest = true;
         _m.clearMeowCache();
         search('');
     }
@@ -856,7 +863,7 @@ const closeImageViewer =()=> $('#image-viewer').hide();
 
 function onClickMeowMenu (e) {
     let $meowBox = $(e.target).parents('.meow-box');
-    meow.currentMeowId = $meowBox.attr('meowid');
+    _m.currentMeowId = $meowBox.attr('meowid');
     let is_private = $meowBox.attr('is_private');
     if (is_private == 3) {
         $('#meow-menu-to-public').show();
@@ -879,7 +886,7 @@ const closeMeowMenu =()=> $('#meow-menu-wrap').hide() && false;
 
 function setMeowIsPrivate ($m, isPrivate) {
     $m.attr('is_private', isPrivate);
-    _m.cache.meows[meow.currentMeowId] && (_m.cache.meows[meow.currentMeowId].is_private = isPrivate);
+    _m.cache.meows[_m.currentMeowId] && (_m.cache.meows[_m.currentMeowId].is_private = isPrivate);
 }
 function removeMeowCacheOrder(tl, id) {
     const index = _m.cache[tl].ids.findIndex(n => n === id);
@@ -887,12 +894,12 @@ function removeMeowCacheOrder(tl, id) {
 }
 
 function meowToPublic () {
-    let $m = $('#meow-' + meow.currentMeowId);
+    let $m = $('#meow-' + _m.currentMeowId);
     setMeowIsPrivate($m, "0");
-    if (_m.cache.meows[meow.currentMeowId]) {
-        removeMeowCacheOrder("e", meow.currentMeowId);
-        removeMeowCacheOrder("l", meow.currentMeowId);
-        _m.cache["p"].ids.push(meow.currentMeowId);
+    if (_m.cache.meows[_m.currentMeowId]) {
+        removeMeowCacheOrder("e", _m.currentMeowId);
+        removeMeowCacheOrder("l", _m.currentMeowId);
+        _m.cache["p"].ids.push(_m.currentMeowId);
     }
     $m.find('.meow-foot-only-each-follow').remove();
     $m.find('.meow-foot-menu').before(
@@ -901,17 +908,17 @@ function meowToPublic () {
     $m.find('.meow-foot-share').on('click', onClickShare);
 }
 function onClickMeowToPublic () {
-    $.post('/api/changeMeowToPublic', { id: meow.currentMeowId })
+    $.post('/api/changeMeowToPublic', { id: _m.currentMeowId })
         .done(v => (v == "1" && meowToPublic()));
     return closeMeowMenu();
 }
 function meowToPrivate () {
-    let $m = $('#meow-' + meow.currentMeowId);
+    let $m = $('#meow-' + _m.currentMeowId);
     setMeowIsPrivate($m, "3");
-    if (_m.cache.meows[meow.currentMeowId]) {
-        removeMeowCacheOrder("p", meow.currentMeowId);
-        _m.cache["l"].ids.push(meow.currentMeowId);
-        _m.cache["e"].ids.push(meow.currentMeowId);
+    if (_m.cache.meows[_m.currentMeowId]) {
+        removeMeowCacheOrder("p", _m.currentMeowId);
+        _m.cache["l"].ids.push(_m.currentMeowId);
+        _m.cache["e"].ids.push(_m.currentMeowId);
     }
     $m.find('.meow-foot-share').remove();
     $m.find('.meow-foot-menu').before(
@@ -921,22 +928,22 @@ function meowToPrivate () {
     );
 }
 function onClickMeowToPrivate () {
-    $.post('/api/changeMeowToPrivate', { id: meow.currentMeowId })
+    $.post('/api/changeMeowToPrivate', { id: _m.currentMeowId })
         .done(data => (data == "1" && meowToPrivate()));
     return closeMeowMenu();
 }
 
 function meowToSensitive (isSensitive) {
-    let $m = $('#meow-' + meow.currentMeowId);
+    let $m = $('#meow-' + _m.currentMeowId);
     $m.attr('is_sensitive', isSensitive);
-    _m.cache.meows[meow.currentMeowId] && (_m.cache.meows[meow.currentMeowId].is_sensitive = isSensitive);
+    _m.cache.meows[_m.currentMeowId] && (_m.cache.meows[_m.currentMeowId].is_sensitive = isSensitive);
     isSensitive ? $m.addClass('meow-is-sensitive') : $m.removeClass('meow-is-sensitive');
     $m.find('.sensitive-cussion').css('display', isSensitive ? 'block' : 'none');
     $m.find('.meow-body').css('display', isSensitive ? 'none' : 'block');
     return false;
 }
 function onClickMeowToSensitive (v = 1) {
-    $.post('/api/changeMeowToSensitive', { id: meow.currentMeowId, v: v })
+    $.post('/api/changeMeowToSensitive', { id: _m.currentMeowId, v: v })
         .done(data => (data == "1" && meowToSensitive(v)));
     return closeMeowMenu();
 }
@@ -1031,6 +1038,9 @@ function setReplyForm ($e) {
 
 
 $(()=> {
+
+    // _m に諸々追加
+    onMeowJsLoadComplete();
 
     // 投稿フォームがなければ投稿フォーム開くボタン消す
     if (!$('#meow-post-box').length) {

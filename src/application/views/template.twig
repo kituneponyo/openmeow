@@ -13,7 +13,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 
-    <script src="/assets/js/meow.js?513"></script>
+    <script src="/assets/js/meow.js?514"></script>
     <script src="/assets/js/append.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" media="print" onload="this.media='all'"/>
@@ -29,36 +29,35 @@
 <script>
 
     let meow = {
-
-        user: {
-            mid: '{{ user.mid|default('') }}'
-        },
-
-        needCheckLatest: true,
-        isExistsLatest: false,
-
-        currentMeowId: 0,
-
-        uploadFileNames: [],
-        uploadFiles: []
     };
 
-    _m.me = {
-        id: '{{ me.id|default('') }}',
-        mid: '{{ me.mid|default('') }}',
-        showSensitive: {{ me.show_sensitive|default(0) }},
-        isAdmin: {{ me.is_admin|default(0) }},
-        muteEditAt: {{ me.mute_edit_at|default(0) }},
-        muteWordEditAt: {{ me.mute_word_edit_at|default(0) }},
-        albumEditAt: {{ me.album_edit_at|default(0) }}
+    const onMeowJsLoadComplete = () => {
+        _m.version = '{{ config.version }}';
+        $('#user-menu-ver').text("version : " + _m.version);
+        _m.config.amazonAffiriateId = '{{ config.amazonAffiriateId|default('') }}';
+        _m.me = {
+            id: '{{ me.id|default('') }}',
+            mid: '{{ me.mid|default('') }}',
+            showSensitive: {{ me.show_sensitive|default(0) }},
+            isAdmin: {{ me.is_admin|default(0) }},
+            muteEditAt: {{ me.mute_edit_at|default(0) }},
+            muteWordEditAt: {{ me.mute_word_edit_at|default(0) }},
+            albumEditAt: {{ me.album_edit_at|default(0) }},
+            bgcolor: '{{ me.bgcolor }}'
+        };
+        _m.user = {
+            mid: '{{ user.mid|default('') }}',
+            is_follow: {{ user.is_follow|default(0) }},
+            is_followed: {{ user.is_followed|default(0) }},
+            actor: '{{ user.actor }}'
+        };
+        _m.tl = '{{ tl|default('l') }}';
+        !_m.cache[_m.tl] && (_m.cache[_m.tl] = {ids: [], lastUpdate: 0});
     };
-
-    _m.tl = '{{ tl }}';
-    !_m.cache[_m.tl] && (_m.cache[_m.tl] = {ids: [], lastUpdate: 0});
 
     // 新着あり
     function noticeTimeLineUpdate (tl) {
-        meow.isExistsLatest = true; // 新着ありフラグON
+        _m.isExistsLatest = true; // 新着ありフラグON
         $('#tl-' + tl).addClass('has-latest');
         _m.useCrying() && _m.noticeSound.play(); // 新着ボイス
     }
@@ -340,7 +339,7 @@
 
         _m.isLazyLoad = false;
 
-        meow.isExistsLatest = false; // 新着あり、を解除
+        _m.isExistsLatest = false; // 新着あり、を解除
         $('#tl-' + _m.tl).removeClass('has-latest'); // バッヂを消す
     }
 
@@ -364,7 +363,7 @@
                     last_update: lastUpdate,
                     tl: tl,
                     q: _m.q,
-                    u: meow.user.mid,
+                    u: _m.user.mid,
                     max: max
                 }
             }).done(mergeLatest);
@@ -372,7 +371,7 @@
         return false;
     }
 
-    const getLatestDiff =()=> (meow.isExistsLatest && getLatest(_m.tl, _m.updateAt));
+    const getLatestDiff =()=> (_m.isExistsLatest && getLatest(_m.tl, _m.updateAt));
 
     function loadMuteUsers (data) {
 
@@ -400,7 +399,7 @@
         ($e.text() && _m.isWordMuted($e.text()) && $e.parents('.meow-box').addClass('mute'));
     };
 
-    const onClickBookmarkButton =()=> changeBookmark(meow.currentMeowId, 1) || closeBookmarkMenu();
+    const onClickBookmarkButton =()=> changeBookmark(_m.currentMeowId, 1) || closeBookmarkMenu();
 
     function loadSelectAlbum () {
         $('select[name=album_id]').empty().append('<option value="0">未整理</option>');

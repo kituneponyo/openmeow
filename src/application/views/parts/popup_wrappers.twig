@@ -8,7 +8,7 @@
         <p id="meow-menu-to-private"><a href="#" onclick="return onClickMeowToPrivate();">相互フォロー限定にする</a></p>
         <p id="meow-menu-to-sensitive"><a href="#" onclick="return onClickMeowToSensitive(1);">閲覧注意にする</a></p>
         <p id="meow-menu-to-not-sensitive"><a href="#" onclick="return onClickMeowToSensitive(0);">閲覧注意解除</a></p>
-        <p><a href="#" onclick="deleteMeow(meow.currentMeowId); $('#meow-menu-wrap').hide(); return false;">削除する</a></p>
+        <p><a href="#" onclick="deleteMeow(_m.currentMeowId); $('#meow-menu-wrap').hide(); return false;">削除する</a></p>
     </div>
 </div>
 
@@ -24,7 +24,7 @@
                 <input type="button" value="ブックマークする" onclick="onClickBookmarkButton();">
             </div>
             <div id="bookmark-menu-remove">
-                <a href="#" onclick="changeBookmark(meow.currentMeowId, 0); return closeBookmarkMenu();">ブックマークを外す</a>
+                <a href="#" onclick="changeBookmark(_m.currentMeowId, 0); return closeBookmarkMenu();">ブックマークを外す</a>
             </div>
         </div>
     </div>

@@ -199,9 +199,9 @@ const _m = {
         } else if (diff <= (7 * 24 * 3600)) {
             return parseInt((diff % (3600 * 24 * 7)) / (3600 * 24)) + "日";
         } else if (diff <= (12 * 7 * 24 * 3600)) {
-            return t.getMonth() + '月' + t.getDate() + '日';
+            return (t.getMonth() + 1) + '月' + t.getDate() + '日';
         }
-        return t.getFullYear() + '年' + t.getMonth() + '月' + t.getDate() + '日';
+        return t.getFullYear() + '年' + (t.getMonth() + 1) + '月' + t.getDate() + '日';
     },
 
     checkUpdate: v => {
@@ -255,7 +255,7 @@ _m.ogp = {
                     ogpCache[url] = ogp;
                     if (!ogp.update_at) {
                         let now = new Date();
-                        ogp.update_at = now.getFullYear() + "-" + now.getMonth() + '-' + now.getDate() + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+                        ogp.update_at = now.getFullYear() + "-" + (now.getMonth() + 1) + '-' + now.getDate() + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
                     }
                     localStorage.ogp = JSON.stringify(ogpCache);
                 }

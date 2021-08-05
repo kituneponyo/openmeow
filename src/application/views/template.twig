@@ -336,8 +336,12 @@
             // 投稿日時の表記を更新
             let $meowTime = $tlMeow.find('.meow-time');
             $meowTime.text(_m.getDisplayTime($meowTime.attr('title')));
-
-            $tlMeow.fadeIn(500); // レンダリング
+            
+            // レンダリング
+            // いきなり fadeIn すると 一瞬 opacity = 1 で表示されるから
+            $tlMeow.css('opacity', 0);
+            $tlMeow.css('display', 'block');
+            $tlMeow.animate({'opacity': 1}, 500);
         }
 
         queryFav();

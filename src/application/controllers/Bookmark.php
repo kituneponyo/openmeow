@@ -34,11 +34,14 @@ class Bookmark extends MY_Controller {
 	    $sql = " select * from album where user_id = {$me->id} ";
 	    $albums = $this->db->query($sql)->result();
 
+	    setcookie('tl', 'b', time()+60*60*24*30*12, '/');
+
     	$this->display('bookmark/index.twig',[
     		'albums' => $albums,
     		'meows' => $meows,
 		    'enableSearch' => 0,
 		    'enableMeowStartButton' => 0,
+		    'tl' => 'b',
 	    ]);
     }
 
@@ -73,6 +76,8 @@ class Bookmark extends MY_Controller {
 	    $sql = " select * from album where user_id = {$me->id} ";
 	    $albums = $this->db->query($sql)->result();
 
+	    setcookie('tl', 'b', time()+60*60*24*30*12, '/');
+
 	    $this->display('bookmark/index.twig',[
 		    'albums' => $albums,
 		    'meows' => $meows,
@@ -80,6 +85,7 @@ class Bookmark extends MY_Controller {
 		    'album' => $album,
 		    'enableSearch' => 0,
 		    'enableMeowStartButton' => 0,
+		    'tl' => 'b',
 	    ]);
     }
 

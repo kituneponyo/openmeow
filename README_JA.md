@@ -57,6 +57,7 @@ https://opensource.meow.fan/
 
 * MySQLのデータベースと、権限を与えたユーザを用意してください。
 * ダウンロードしたファイルを、あなたのサーバに配置してください。
+* application ディレクトリで composer install してください。
 * https://（あなたのサーバ）/init を実行し、画面の案内に従ってください。
 
 # Notes

@@ -8,6 +8,7 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-RewriteCond $1 !^(index\.php|.+\.css$|.+\.js$|.+\.png$|.+\.jpg$|robots\.txt)
+RewriteCond %{REQUEST_URI} !\.(php|css|js|png|jpg)$
+RewriteCond %{REQUEST_URI} !^/robots\.txt$
 RewriteRule ^(.*)$ /index.php?$1 [L]
 

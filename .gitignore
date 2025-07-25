@@ -18,3 +18,5 @@ application/logs/*
 !application/logs/index.html
 !application/logs/.htaccess
 docker/mysql/data/
+src/application/vendor/
+src/application/logs/
